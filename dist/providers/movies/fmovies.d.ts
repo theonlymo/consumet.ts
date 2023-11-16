@@ -34,6 +34,8 @@ declare class Fmovies extends MovieParser {
      */
     fetchEpisodeServers: (episodeId: string, mediaId: string) => Promise<IEpisodeServer[]>;
     private ev;
+    private rot13;
+    private vrfShift;
     private decrypt;
     private ajaxReqUrl;
 }
