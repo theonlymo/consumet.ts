@@ -1,19 +1,14 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const cheerio_1 = require("cheerio");
 const utils_1 = require("../../utils/utils");
 const models_1 = require("../../models");
 const extractors_1 = require("../../extractors");
-const crypto_1 = __importDefault(require("crypto"));
-const buffer_1 = require("buffer");
 class Fmovies extends models_1.MovieParser {
     constructor(fmoviesResolver, proxyConfig, apiKey, adapter) {
         super(proxyConfig && proxyConfig.url ? proxyConfig : undefined, adapter);
         this.name = 'Fmovies';
-        this.baseUrl = 'https://fmoviesz.to';
+        this.baseUrl = 'https://fmovies.to';
         this.logo = 'https://s1.bunnycdn.ru/assets/sites/fmovies/logo2.png';
         this.classPath = 'MOVIES.Fmovies';
         this.supportedTypes = new Set([models_1.TvType.MOVIE, models_1.TvType.TVSERIES]);
@@ -72,9 +67,7 @@ class Fmovies extends models_1.MovieParser {
             try {
                 const { data } = await this.client.get(mediaId);
                 const $ = (0, cheerio_1.load)(data);
-                // const uid = $('#watch').attr('data-id')!;
-                const uid = $('[itemprop="mainEntity"]').first().attr('data-id');
-                console.log(uid);
+                const uid = $('#watch').attr('data-id');
                 // TODO
                 // const recommendationsArray: IMovieResult[] = [];
                 // $(
@@ -184,9 +177,8 @@ class Fmovies extends models_1.MovieParser {
             try {
                 const { data } = await this.client.get(mediaId);
                 const $ = (0, cheerio_1.load)(data);
-                const uid = $('[itemprop="mainEntity"]').first().attr('data-id');
+                const uid = $('#watch').attr('data-id');
                 const epsiodeServers = [];
-                console.log(uid);
                 const ajaxData = (await this.client.get(await this.ajaxReqUrl(uid))).data;
                 const $$ = (0, cheerio_1.load)(ajaxData.html);
                 const servers = {};
@@ -215,63 +207,36 @@ class Fmovies extends models_1.MovieParser {
                 }
             }
             catch (err) {
-                console.log(err);
                 throw new Error('Episode not found');
             }
         };
         this.fmoviesResolver = fmoviesResolver !== null && fmoviesResolver !== void 0 ? fmoviesResolver : this.fmoviesResolver;
         this.apiKey = apiKey !== null && apiKey !== void 0 ? apiKey : this.apiKey;
     }
-    async ev(input) {
-        const rc4Key = buffer_1.Buffer.from('ysJhV6U27FVIjjuk');
-        const cipher = crypto_1.default.createCipheriv('rc4', rc4Key, buffer_1.Buffer.alloc(0));
-        let vrf = buffer_1.Buffer.concat([cipher.update(buffer_1.Buffer.from(input)), cipher.final()]);
-        vrf = buffer_1.Buffer.from(vrf.toString('base64'), 'base64');
-        vrf = this.vrfShift(vrf);
-        vrf = buffer_1.Buffer.from(vrf.toString('base64'), 'utf8');
-        vrf = this.rot13(vrf);
-        return encodeURIComponent(vrf.toString('utf8'));
-    }
-    rot13(vrf) {
-        const str = vrf.toString('utf8');
-        return buffer_1.Buffer.from(str.replace(/[a-zA-Z]/g, function (c) {
-            let charCode = c.charCodeAt(0) + 13;
-            return String.fromCharCode((c <= 'Z' ? 90 : 122) >= charCode ? charCode : charCode - 26);
-        }));
-    }
-    vrfShift(vrf) {
-        const shifts = [-3, 3, -4, 2, -2, 5, 4, 5];
-        const str = vrf.toString('utf8');
-        let shifted = '';
-        for (let i = 0; i < str.length; i++) {
-            shifted += String.fromCharCode(str.charCodeAt(i) + shifts[i % 8]);
-        }
-        return buffer_1.Buffer.from(shifted, 'utf8');
+    async ev(query) {
+        const { data } = await this.client.get(`${this.fmoviesResolver}/fmovies-vrf?query=${encodeURIComponent(query)}&apikey=${this.apiKey}`);
+        return encodeURIComponent(data.url);
     }
     async decrypt(query) {
-        let vrf = buffer_1.Buffer.from(query, 'base64');
-        const rc4Key = buffer_1.Buffer.from('hlPeNwkncH0fq9so');
-        const cipher = crypto_1.default.createCipheriv('rc4', rc4Key, buffer_1.Buffer.alloc(0));
-        vrf = buffer_1.Buffer.concat([cipher.update(vrf), cipher.final()]);
-        return decodeURIComponent(vrf.toString('utf8'));
+        const { data } = await this.client.get(`${this.fmoviesResolver}/fmovies-decrypt?query=${encodeURIComponent(query)}&apikey=${this.apiKey}`);
+        return data.url;
     }
     async ajaxReqUrl(id) {
         const vrf = await this.ev(id);
-        //https://fmoviesz.to/ajax/episode/list/68627?vrf=QUbpQRfF_h%2C%3B
-        return `${this.baseUrl}/ajax/episode/list/${id}?vrf=${vrf}`;
+        return `${this.baseUrl}/ajax/film/servers?id=${id}&vrf=${vrf}&token=`;
     }
 }
 // (async () => {
 //     const movie = new Fmovies("https://9anime.enimax.xyz", {url: "https://proxy.vnxservers.com/"}, "848624aaffec43808c86f5e47e3fa5b0");
-//     // const search = await movie.search('friends');
+//     const search = await movie.search('friends');
 //     // const search = await movie.fetchMediaInfo('series/friends-3rvj9');
 //     // const search = await movie.fetchMediaInfo('movie/chimes-at-midnight-1qvnw');
-//     const search = await movie.fetchEpisodeSources('1-full','movie/chimes-at-midnight-1qvnw');
+//     // const search = await movie.fetchEpisodeSources('1-full','movie/chimes-at-midnight-1qvnw');
 //     // const search = await movie.fetchMediaInfo('series/friends-3rvj9');
-//     console.log(JSON.stringify(search));
-//     // console.log(
-//     //     search
-//     // );
+//     // console.log(JSON.stringify(movieInfo));
+//     console.log(
+//         search
+//     );
 //     // const recentTv = await movie.fetchTrendingTvShows();
 //     // console.log(search);
 // })();
