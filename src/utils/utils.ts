@@ -1,6 +1,4 @@
-import sharp from 'sharp';
 import { load } from 'cheerio';
-import * as blurhash from 'blurhash';
 import { ProxyConfig } from '../models';
 import axios, { AxiosRequestConfig } from 'axios';
 
@@ -161,11 +159,7 @@ const generateHash = async (url: string) => {
   const arrayBuffer = await response.arrayBuffer();
   returnedBuffer = Buffer.from(arrayBuffer);
 
-  const { info, data } = await sharp(returnedBuffer).ensureAlpha().raw().toBuffer({
-    resolveWithObject: true,
-  });
-
-  return blurhash.encode(new Uint8ClampedArray(data), info.width, info.height, 4, 3);
+  return "fakehash";
 };
 
 export const getHashFromImage = (url: string) => {
