@@ -23,7 +23,7 @@ class VidCloud extends VideoExtractor {
       const options = {
         headers: {
           'X-Requested-With': 'XMLHttpRequest',
-          Referer: videoUrl.href,
+          Referer: "https://flixtorz.to",
           'User-Agent': USER_AGENT,
         },
       };
