@@ -8,7 +8,7 @@ class Gogoanime extends models_1.AnimeParser {
     constructor() {
         super(...arguments);
         this.name = 'Gogoanime';
-        this.baseUrl = 'https://anitaku.to';
+        this.baseUrl = 'https://gogoanime3.net';
         this.logo = 'https://play-lh.googleusercontent.com/MaGEiAEhNHAJXcXKzqTNgxqRmhuKB1rCUgb15UrN_mWUNRnLpO5T1qja64oRasO7mn0';
         this.classPath = 'ANIME.Gogoanime';
         this.ajaxUrl = 'https://ajax.gogo-load.com/ajax';
@@ -316,13 +316,86 @@ class Gogoanime extends models_1.AnimeParser {
                 throw new Error('Something went wrong. Please try again later.');
             }
         };
-        this.fetchGenreList = async () => {
+        this.fetchRecentMovies = async (page = 1) => {
             try {
-                const res = await this.client.get(`${this.baseUrl}/home.html`);
+                const res = await this.client.get(`${this.baseUrl}/anime-movies.html?aph&page=${page}`);
                 const $ = (0, cheerio_1.load)(res.data);
-                const genres = [];
+                const recentMovies = [];
+                $('div.last_episodes > ul > li').each((i, el) => {
+                    var _a;
+                    const a = $(el).find('p.name > a');
+                    const pRelease = $(el).find('p.released');
+                    const pName = $(el).find('p.name > a');
+                    recentMovies.push({
+                        id: (_a = a.attr('href')) === null || _a === void 0 ? void 0 : _a.replace(`/category/`, ''),
+                        title: pName.attr('title'),
+                        releaseDate: pRelease.text().replace('Released: ', '').trim(),
+                        image: $(el).find('div > a > img').attr('src'),
+                        url: `${this.baseUrl}${a.attr('href')}`,
+                    });
+                });
+                const hasNextPage = !$('div.anime_name.anime_movies > div > div > ul > li').last().hasClass('selected');
+                return {
+                    currentPage: page,
+                    hasNextPage: hasNextPage,
+                    results: recentMovies,
+                };
+            }
+            catch (err) {
+                console.log(err);
+                throw new Error('Something went wrong. Please try again later.');
+            }
+        };
+        this.fetchPopular = async (page = 1) => {
+            try {
+                const res = await this.client.get(`${this.baseUrl}/popular.html?page=${page}`);
+                const $ = (0, cheerio_1.load)(res.data);
+                const recentMovies = [];
+                $('div.last_episodes > ul > li').each((i, el) => {
+                    var _a;
+                    const a = $(el).find('p.name > a');
+                    const pRelease = $(el).find('p.released');
+                    const pName = $(el).find('p.name > a');
+                    recentMovies.push({
+                        id: (_a = a.attr('href')) === null || _a === void 0 ? void 0 : _a.replace(`/category/`, ''),
+                        title: pName.attr('title'),
+                        releaseDate: pRelease.text().replace('Released: ', '').trim(),
+                        image: $(el).find('div > a > img').attr('src'),
+                        url: `${this.baseUrl}${a.attr('href')}`,
+                    });
+                });
+                const hasNextPage = !$('div.anime_name.anime_movies > div > div > ul > li').last().hasClass('selected');
+                return {
+                    currentPage: page,
+                    hasNextPage: hasNextPage,
+                    results: recentMovies,
+                };
+            }
+            catch (err) {
+                console.log(err);
+                throw new Error('Something went wrong. Please try again later.');
+            }
+        };
+        this.fetchGenreList = async () => {
+            const genres = [];
+            let res = null;
+            try {
+                res = await this.client.get(`${this.baseUrl}/home.html`);
+            }
+            catch (err) {
+                try {
+                    res = await this.client.get(`${this.baseUrl}/`);
+                }
+                catch (error) {
+                    throw new Error('Something went wrong. Please try again later.');
+                }
+            }
+            try {
+                const $ = (0, cheerio_1.load)(res.data);
                 $('nav.menu_series.genre.right > ul > li').each((_index, element) => {
-                    genres.push($(element).find('a').attr('title'));
+                    var _a;
+                    const genre = $(element).find('a');
+                    genres.push({ id: (_a = genre.attr('href')) === null || _a === void 0 ? void 0 : _a.replace('/genre/', ''), title: genre.attr('title') });
                 });
                 return genres;
             }

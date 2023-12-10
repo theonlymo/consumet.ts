@@ -20,7 +20,7 @@ import { GogoCDN, StreamSB } from '../../extractors';
 
 class Gogoanime extends AnimeParser {
   override readonly name = 'Gogoanime';
-  protected override baseUrl = 'https://anitaku.to';
+  protected override baseUrl = 'https://gogoanime3.net';
   protected override logo =
     'https://play-lh.googleusercontent.com/MaGEiAEhNHAJXcXKzqTNgxqRmhuKB1rCUgb15UrN_mWUNRnLpO5T1qja64oRasO7mn0';
   protected override classPath = 'ANIME.Gogoanime';
@@ -382,18 +382,94 @@ class Gogoanime extends AnimeParser {
     }
   };
 
-  fetchGenreList = async (): Promise<string[]> => {
+  fetchRecentMovies = async (page: number = 1): Promise<ISearch<IAnimeResult>> => {
     try {
-      const res = await this.client.get(`${this.baseUrl}/home.html`);
+      const res = await this.client.get(`${this.baseUrl}/anime-movies.html?aph&page=${page}`);
 
       const $ = load(res.data);
 
-      const genres: string[] = [];
+      const recentMovies: IAnimeResult[] = [];
 
-      $('nav.menu_series.genre.right > ul > li').each((_index, element) => {
-        genres.push($(element).find('a').attr('title')!);
+      $('div.last_episodes > ul > li').each((i, el) => {
+        const a = $(el).find('p.name > a');
+        const pRelease = $(el).find('p.released');
+        const pName = $(el).find('p.name > a');
+
+        recentMovies.push({
+          id: a.attr('href')?.replace(`/category/`, '')!,
+          title: pName.attr('title')!,
+          releaseDate: pRelease.text().replace('Released: ', '').trim(),
+          image: $(el).find('div > a > img').attr('src'),
+          url: `${this.baseUrl}${a.attr('href')}`,
+        });
       });
 
+      const hasNextPage = !$('div.anime_name.anime_movies > div > div > ul > li').last().hasClass('selected');
+
+      return {
+        currentPage: page,
+        hasNextPage: hasNextPage,
+        results: recentMovies,
+      };
+    } catch (err) {
+      console.log(err);
+      throw new Error('Something went wrong. Please try again later.');
+    }
+  };
+
+  fetchPopular = async (page: number = 1): Promise<ISearch<IAnimeResult>> => {
+    try {
+      const res = await this.client.get(`${this.baseUrl}/popular.html?page=${page}`);
+
+      const $ = load(res.data);
+
+      const recentMovies: IAnimeResult[] = [];
+
+      $('div.last_episodes > ul > li').each((i, el) => {
+        const a = $(el).find('p.name > a');
+        const pRelease = $(el).find('p.released');
+        const pName = $(el).find('p.name > a');
+
+        recentMovies.push({
+          id: a.attr('href')?.replace(`/category/`, '')!,
+          title: pName.attr('title')!,
+          releaseDate: pRelease.text().replace('Released: ', '').trim(),
+          image: $(el).find('div > a > img').attr('src'),
+          url: `${this.baseUrl}${a.attr('href')}`,
+        });
+      });
+
+      const hasNextPage = !$('div.anime_name.anime_movies > div > div > ul > li').last().hasClass('selected');
+
+      return {
+        currentPage: page,
+        hasNextPage: hasNextPage,
+        results: recentMovies,
+      };
+    } catch (err) {
+      console.log(err);
+      throw new Error('Something went wrong. Please try again later.');
+    }
+  };
+
+  fetchGenreList = async (): Promise<{ id: string | undefined; title: string | undefined }[]> => {
+    const genres: { id: string | undefined; title: string | undefined }[] = [];
+    let res = null;
+    try {
+      res = await this.client.get(`${this.baseUrl}/home.html`);
+    } catch (err) {
+      try {
+        res = await this.client.get(`${this.baseUrl}/`);
+      } catch (error) {
+        throw new Error('Something went wrong. Please try again later.');
+      }
+    }
+    try {
+      const $ = load(res.data);
+      $('nav.menu_series.genre.right > ul > li').each((_index, element) => {
+        const genre = $(element).find('a');
+        genres.push({ id: genre.attr('href')?.replace('/genre/', ''), title: genre.attr('title') }!);
+      });
       return genres;
     } catch (err) {
       throw new Error('Something went wrong. Please try again later.');
