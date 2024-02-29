@@ -70,11 +70,11 @@ class Gogoanime extends models_1.AnimeParser {
                     .trim();
                 animeInfo.url = id;
                 animeInfo.image = $('div.anime_info_body_bg > img').attr('src');
-                animeInfo.releaseDate = $('div.anime_info_body_bg > p:nth-child(7)')
+                animeInfo.releaseDate = $('div.anime_info_body_bg > p:nth-child(8)')
                     .text()
                     .trim()
                     .split('Released: ')[1];
-                animeInfo.description = $('div.anime_info_body_bg > p:nth-child(5)')
+                animeInfo.description = $('div.anime_info_body_bg > div:nth-child(6)')
                     .text()
                     .trim()
                     .replace('Plot Summary: ', '');
@@ -84,7 +84,7 @@ class Gogoanime extends models_1.AnimeParser {
                     .trim()
                     .toUpperCase();
                 animeInfo.status = models_1.MediaStatus.UNKNOWN;
-                switch ($('div.anime_info_body_bg > p:nth-child(8) > a').text().trim()) {
+                switch ($('div.anime_info_body_bg > p:nth-child(9) > a').text().trim()) {
                     case 'Ongoing':
                         animeInfo.status = models_1.MediaStatus.ONGOING;
                         break;
@@ -98,11 +98,11 @@ class Gogoanime extends models_1.AnimeParser {
                         animeInfo.status = models_1.MediaStatus.UNKNOWN;
                         break;
                 }
-                animeInfo.otherName = $('div.anime_info_body_bg > p:nth-child(9)')
+                animeInfo.otherName = $('div.anime_info_body_bg > p:nth-child(10)')
                     .text()
                     .replace('Other name: ', '')
                     .replace(/;/g, ',');
-                $('div.anime_info_body_bg > p:nth-child(6) > a').each((i, el) => {
+                $('div.anime_info_body_bg > p:nth-child(7) > a').each((i, el) => {
                     var _a;
                     (_a = animeInfo.genres) === null || _a === void 0 ? void 0 : _a.push($(el).attr('title').toString());
                 });
@@ -243,7 +243,7 @@ class Gogoanime extends models_1.AnimeParser {
                     recentEpisodes.push({
                         id: (_b = (_a = $(el).find('a').attr('href')) === null || _a === void 0 ? void 0 : _a.split('/')[1]) === null || _b === void 0 ? void 0 : _b.split('-episode')[0],
                         episodeId: (_c = $(el).find('a').attr('href')) === null || _c === void 0 ? void 0 : _c.split('/')[1],
-                        episodeNumber: parseInt($(el).find('p.episode').text().replace('Episode ', '')),
+                        episodeNumber: parseFloat($(el).find('p.episode').text().replace('Episode ', '')),
                         title: $(el).find('p.name > a').attr('title'),
                         image: $(el).find('div > a > img').attr('src'),
                         url: `${this.baseUrl}${(_d = $(el).find('a').attr('href')) === null || _d === void 0 ? void 0 : _d.trim()}`,
@@ -398,6 +398,43 @@ class Gogoanime extends models_1.AnimeParser {
                     genres.push({ id: (_a = genre.attr('href')) === null || _a === void 0 ? void 0 : _a.replace('/genre/', ''), title: genre.attr('title') });
                 });
                 return genres;
+            }
+            catch (err) {
+                throw new Error('Something went wrong. Please try again later.');
+            }
+        };
+        this.fetchAnimeList = async (page = 1) => {
+            const animeList = [];
+            let res = null;
+            try {
+                res = await this.client.get(`${this.baseUrl}/anime-list.html?page=${page}`);
+                const $ = (0, cheerio_1.load)(res.data);
+                $('.anime_list_body .listing li').each((_index, element) => {
+                    var _a;
+                    const genres = [];
+                    const entryBody = $('p.type', $(element).attr('title'));
+                    const genresEl = entryBody.first();
+                    genresEl.find('a').each((_idx, genreAnchor) => {
+                        genres.push($(genreAnchor).attr('title'));
+                    });
+                    const releaseDate = $(entryBody.get(1)).text();
+                    const img = $('div', $(element).attr('title'));
+                    const a = $(element).find('a');
+                    animeList.push({
+                        id: (_a = a.attr('href')) === null || _a === void 0 ? void 0 : _a.replace(`/category/`, ''),
+                        title: a.text(),
+                        image: $(img).find('img').attr('src'),
+                        url: `${this.baseUrl}${a.attr('href')}`,
+                        genres,
+                        releaseDate
+                    });
+                });
+                const hasNextPage = !$('div.anime_name.anime_list > div > div > ul > li').last().hasClass('selected');
+                return {
+                    currentPage: page,
+                    hasNextPage: hasNextPage,
+                    results: animeList,
+                };
             }
             catch (err) {
                 throw new Error('Something went wrong. Please try again later.');

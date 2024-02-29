@@ -32,10 +32,10 @@ class VidCloud extends models_1.VideoExtractor {
                 let sources = undefined;
                 res = await this.client.get(`${isAlternative ? this.host2 : this.host}/ajax/embed-4/getSources?id=${id}`, options);
                 if (!(0, utils_1.isJson)(res.data.sources)) {
-                    let keys = await (await this.client.get('https://keys4.fun')).data["rabbitstream"]["keys"];
-                    let keyString = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(keys))));
-                    console.log(crypto_js_1.default.AES.decrypt(res.data.sources, keyString).toString(crypto_js_1.default.enc.Utf8));
-                    sources = JSON.parse(crypto_js_1.default.AES.decrypt(res.data.sources, keyString).toString(crypto_js_1.default.enc.Utf8));
+                    const keys = await (await this.client.get('https://raw.githubusercontent.com/eatmynerds/key/e4/key.txt')).data;
+                    const keyString = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(JSON.parse(JSON.stringify(keys))))));
+                    const decryptedVal = crypto_js_1.default.AES.decrypt(res.data.sources, keyString).toString(crypto_js_1.default.enc.Utf8);
+                    sources = (0, utils_1.isJson)(decryptedVal) ? JSON.parse(decryptedVal) : res.data.sources;
                 }
                 this.sources = sources.map((s) => ({
                     url: s.file,
