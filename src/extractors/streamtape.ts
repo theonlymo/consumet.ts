@@ -21,8 +21,7 @@ class StreamTape extends VideoExtractor {
       sh = sh.substring(3);
       fh = fh.replace(/\'/g, '');
 
-      const url = `https:${fh}${sh}`;
-
+      const url = `https:${fh}${sh}`.replace(/\s/g, '');
       this.sources.push({
         url: url,
         isM3U8: url.includes('.m3u8'),

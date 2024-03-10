@@ -17,7 +17,7 @@ class StreamTape extends models_1.VideoExtractor {
                 let [fh, sh] = (_a = $.html()) === null || _a === void 0 ? void 0 : _a.match(/robotlink'\).innerHTML = (.*)'/)[1].split("+ ('");
                 sh = sh.substring(3);
                 fh = fh.replace(/\'/g, '');
-                const url = `https:${fh}${sh}`;
+                const url = `https:${fh}${sh}`.replace(/\s/g, '');
                 this.sources.push({
                     url: url,
                     isM3U8: url.includes('.m3u8'),
