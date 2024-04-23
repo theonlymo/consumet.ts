@@ -16,7 +16,7 @@ import { MixDrop, AsianLoad, StreamTape, StreamSB } from '../../extractors';
 
 class DramaCool extends MovieParser {
   override readonly name = 'DramaCool';
-  protected override baseUrl = 'https://dramacool.com.pa';
+  protected override baseUrl = 'https://asianc.to';
   protected override logo =
     'https://play-lh.googleusercontent.com/IaCb2JXII0OV611MQ-wSA8v_SAs9XF6E3TMDiuxGGXo4wp9bI60GtDASIqdERSTO5XU';
   protected override classPath = 'MOVIES.DramaCool';
