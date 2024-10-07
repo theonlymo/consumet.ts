@@ -1,5 +1,6 @@
 import { info } from 'console';
 import { ANIME } from '../../src/providers';
+import { StreamingServers } from '../../src/models';
 
 jest.setTimeout(120000);
 
@@ -26,7 +27,7 @@ test('returns a filled array of servers', async () => {
 });
 
 test('returns a filled object of episode sources', async () => {
-  const data = await gogoanime.fetchEpisodeSources('spy-x-family-episode-9');
+  const data = await gogoanime.fetchEpisodeSources('spy-x-family-episode-9', StreamingServers.StreamWish);
   expect(data.sources).not.toEqual([]);
 });
 
@@ -70,6 +71,8 @@ test('returns a filled array of anime list', async () => {
 });
 
 test('returns a filled array of direct download link', async () => {
-  const data = await gogoanime.fetchDirectDownloadLink('https://embtaku.pro/download?id=MjE4NTQ2&token=-uq9s5PsPto2lD8SC6NBqQ&expires=1711622781');
+  const data = await gogoanime.fetchDirectDownloadLink(
+    'https://embtaku.pro/download?id=MjE4NTQ2&token=-uq9s5PsPto2lD8SC6NBqQ&expires=1711622781'
+  );
   expect(data).not.toEqual([]);
 });

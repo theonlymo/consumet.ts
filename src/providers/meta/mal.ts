@@ -18,6 +18,7 @@ import Zoro from '../anime/zoro';
 import Crunchyroll from '../anime/crunchyroll';
 import Anify from '../anime/anify';
 import Bilibili from '../anime/bilibili';
+import { ANIFY_URL } from '../../utils/utils';
 
 class Myanimelist extends AnimeParser {
   override readonly name = 'Myanimelist';
@@ -26,9 +27,9 @@ class Myanimelist extends AnimeParser {
   protected override classPath = 'META.Myanimelist';
 
   private readonly anilistGraphqlUrl = 'https://graphql.anilist.co';
-  private readonly kitsuGraphqlUrl = 'https://kitsu.io/api/graphql';
+  private readonly kitsuGraphqlUrl = 'https://kitsu.app/api/graphql';
   private readonly malSyncUrl = 'https://api.malsync.moe';
-  private readonly anifyUrl = 'https://api.anify.tv';
+  private readonly anifyUrl = ANIFY_URL;
   provider: AnimeParser;
 
   /**

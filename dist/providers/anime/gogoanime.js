@@ -8,7 +8,7 @@ class Gogoanime extends models_1.AnimeParser {
     constructor(customBaseURL, proxy, adapter) {
         super(...arguments);
         this.name = 'Gogoanime';
-        this.baseUrl = 'https://anitaku.so';
+        this.baseUrl = 'https://anitaku.pe';
         this.logo = 'https://play-lh.googleusercontent.com/MaGEiAEhNHAJXcXKzqTNgxqRmhuKB1rCUgb15UrN_mWUNRnLpO5T1qja64oRasO7mn0';
         this.classPath = 'ANIME.Gogoanime';
         this.ajaxUrl = 'https://ajax.gogocdn.net/ajax';
@@ -35,8 +35,8 @@ class Gogoanime extends models_1.AnimeParser {
                         title: $(el).find('p.name > a').text(),
                         url: `${this.baseUrl}/${$(el).find('p.name > a').attr('href')}`,
                         image: $(el).find('div > a > img').attr('src'),
-                        releaseDate: $(el).find('p.released').text().trim(),
-                        subOrDub: $(el).find('p.name > a').text().toLowerCase().includes('dub')
+                        releaseDate: $(el).find('p.released').text().trim().replace('Released: ', ''),
+                        subOrDub: $(el).find('p.name > a').text().toLowerCase().includes('(dub)')
                             ? models_1.SubOrSub.DUB
                             : models_1.SubOrSub.SUB,
                     });
@@ -98,10 +98,7 @@ class Gogoanime extends models_1.AnimeParser {
                         animeInfo.status = models_1.MediaStatus.UNKNOWN;
                         break;
                 }
-                animeInfo.otherName = $('div.anime_info_body_bg > p:nth-child(10)')
-                    .text()
-                    .replace('Other name: ', '')
-                    .replace(/;/g, ',');
+                animeInfo.otherName = $('.other-name a').text().trim();
                 $('div.anime_info_body_bg > p:nth-child(7) > a').each((i, el) => {
                     var _a;
                     (_a = animeInfo.genres) === null || _a === void 0 ? void 0 : _a.push($(el).attr('title').toString());
@@ -134,7 +131,7 @@ class Gogoanime extends models_1.AnimeParser {
          * @param episodeId episode id
          * @param server server type (default 'GogoCDN') (optional)
          */
-        this.fetchEpisodeSources = async (episodeId, server = models_1.StreamingServers.VidStreaming) => {
+        this.fetchEpisodeSources = async (episodeId, server = models_1.StreamingServers.VidStreaming, downloadUrl = undefined) => {
             if (episodeId.startsWith('http')) {
                 const serverUrl = new URL(episodeId);
                 switch (server) {
@@ -142,7 +139,7 @@ class Gogoanime extends models_1.AnimeParser {
                         return {
                             headers: { Referer: serverUrl.href },
                             sources: await new extractors_1.GogoCDN(this.proxyConfig, this.adapter).extract(serverUrl),
-                            download: `https://${serverUrl.host}/download${serverUrl.search}`,
+                            download: downloadUrl ? downloadUrl : `https://${serverUrl.host}/download${serverUrl.search}`,
                         };
                     case models_1.StreamingServers.StreamSB:
                         return {
@@ -152,7 +149,7 @@ class Gogoanime extends models_1.AnimeParser {
                                 'User-Agent': utils_1.USER_AGENT,
                             },
                             sources: await new extractors_1.StreamSB(this.proxyConfig, this.adapter).extract(serverUrl),
-                            download: `https://${serverUrl.host}/download${serverUrl.search}`,
+                            download: downloadUrl ? downloadUrl : `https://${serverUrl.host}/download${serverUrl.search}`,
                         };
                     case models_1.StreamingServers.StreamWish:
                         return {
@@ -160,13 +157,13 @@ class Gogoanime extends models_1.AnimeParser {
                                 Referer: serverUrl.href,
                             },
                             sources: await new extractors_1.StreamWish(this.proxyConfig, this.adapter).extract(serverUrl),
-                            download: `https://${serverUrl.host}/download${serverUrl.search}`,
+                            download: downloadUrl ? downloadUrl : `https://${serverUrl.host}/download${serverUrl.search}`,
                         };
                     default:
                         return {
                             headers: { Referer: serverUrl.href },
                             sources: await new extractors_1.GogoCDN(this.proxyConfig, this.adapter).extract(serverUrl),
-                            download: `https://${serverUrl.host}/download${serverUrl.search}`,
+                            download: downloadUrl ? downloadUrl : `https://${serverUrl.host}/download${serverUrl.search}`,
                         };
                 }
             }
@@ -191,7 +188,10 @@ class Gogoanime extends models_1.AnimeParser {
                         serverUrl = new URL(`${$('#load_anime > div > div > iframe').attr('src')}`);
                         break;
                 }
-                return await this.fetchEpisodeSources(serverUrl.href, server);
+                const downloadLink = `${$('.dowloads > a').attr('href')}`;
+                return downloadLink
+                    ? await this.fetchEpisodeSources(serverUrl.href, server, downloadLink)
+                    : await this.fetchEpisodeSources(serverUrl.href, server);
             }
             catch (err) {
                 console.log(err);
@@ -255,7 +255,7 @@ class Gogoanime extends models_1.AnimeParser {
                         id: (_b = (_a = $(el).find('a').attr('href')) === null || _a === void 0 ? void 0 : _a.split('/')[1]) === null || _b === void 0 ? void 0 : _b.split('-episode')[0],
                         episodeId: (_c = $(el).find('a').attr('href')) === null || _c === void 0 ? void 0 : _c.split('/')[1],
                         episodeNumber: parseFloat($(el).find('p.episode').text().replace('Episode ', '')),
-                        title: $(el).find('p.name > a').attr('title'),
+                        title: $(el).find('p.name > a').text(),
                         image: $(el).find('div > a > img').attr('src'),
                         url: `${this.baseUrl}${(_d = $(el).find('a').attr('href')) === null || _d === void 0 ? void 0 : _d.trim()}`,
                     });
@@ -280,7 +280,7 @@ class Gogoanime extends models_1.AnimeParser {
                     var _a;
                     genreInfo.push({
                         id: (_a = $(elem).find('p.name > a').attr('href')) === null || _a === void 0 ? void 0 : _a.split('/')[2],
-                        title: $(elem).find('p.name > a').attr('title'),
+                        title: $(elem).find('p.name > a').text(),
                         image: $(elem).find('div > a > img').attr('src'),
                         released: $(elem).find('p.released').text().replace('Released: ', '').trim(),
                         url: this.baseUrl + '/' + $(elem).find('p.name > a').attr('href'),
@@ -307,7 +307,7 @@ class Gogoanime extends models_1.AnimeParser {
                     var _a, _b;
                     topAiring.push({
                         id: (_a = $(el).find('a:nth-child(1)').attr('href')) === null || _a === void 0 ? void 0 : _a.split('/')[2],
-                        title: $(el).find('a:nth-child(1)').attr('title'),
+                        title: $(el).find('a:nth-child(2)').text().trim().split(',')[0].trim(),
                         image: (_b = $(el).find('a:nth-child(1) > div').attr('style')) === null || _b === void 0 ? void 0 : _b.match('(https?://.*.(?:png|jpg))')[0],
                         url: `${this.baseUrl}${$(el).find('a:nth-child(1)').attr('href')}`,
                         genres: $(el)
@@ -341,7 +341,7 @@ class Gogoanime extends models_1.AnimeParser {
                     const pName = $(el).find('p.name > a');
                     recentMovies.push({
                         id: (_a = a.attr('href')) === null || _a === void 0 ? void 0 : _a.replace(`/category/`, ''),
-                        title: pName.attr('title'),
+                        title: pName.text(),
                         releaseDate: pRelease.text().replace('Released: ', '').trim(),
                         image: $(el).find('div > a > img').attr('src'),
                         url: `${this.baseUrl}${a.attr('href')}`,
@@ -371,7 +371,7 @@ class Gogoanime extends models_1.AnimeParser {
                     const pName = $(el).find('p.name > a');
                     recentMovies.push({
                         id: (_a = a.attr('href')) === null || _a === void 0 ? void 0 : _a.replace(`/category/`, ''),
-                        title: pName.attr('title'),
+                        title: pName.text(),
                         releaseDate: pRelease.text().replace('Released: ', '').trim(),
                         image: $(el).find('div > a > img').attr('src'),
                         url: `${this.baseUrl}${a.attr('href')}`,
@@ -422,7 +422,8 @@ class Gogoanime extends models_1.AnimeParser {
             const idParam = downloadUrl.match(/[?&]id=([^&]+)/);
             const animeID = idParam ? idParam[1] : null;
             if (!captchaToken)
-                captchaToken = '03AFcWeA5zy7DBK82U_tctVKelJ6L2duTWac5at2zXjHLX8XqUm8tI6NKWMxGd2gjh1vi2hnEyRhVgbMhdb9WjexRsJkxTt-C-_iIIZ5yC3E5I19G5Q0buSTcIQIZS6tskrz-mDn-d37aWxAJtqbg0Yoo1XsdVc5Yf4sB-9iQxQK-W_9YLep_QaAz8uL17gMMlCz5WZM3dbBEEGmk_qPbJu_pZ8kk-lFPDzd6iBobcpyIDRZgTgD4bYUnby5WZc11i00mrRiRS3m-qSY0lprGaBqoyY1BbRkQZ25AGPp5al4kSwBZqpcVgLrs3bjdo8XVWAe73_XLa8HhqLWbz_m5Ebyl5F9awwL7w4qikGj-AK7v2G8pgjT22kDLIeenQ_ss4jYpmSzgnuTItur9pZVzpPkpqs4mzr6y274AmJjzppRTDH4VFtta_E02-R7Hc1rUD2kCYt9BqsD7kDjmetnvLtBm97q5XgBS8rQfeH4P-xqiTAsJwXlcrPybSjnwPEptqYCPX5St_BSj4NQfSuzZowXu_qKsP4hAaE9L2W36MvqePPlEm6LChBT3tnqUwcEYNe5k7lkAAbunxx8q_X5Q3iEdcFqt9_0GWHebRBd5abEbjbmoqqCoQeZt7AUvkXCRfBDne-bf25ypyTtwgyuvYMYXau3zGUjgPUO9WIotZwyKyrYmjsZJ7TiM';
+                captchaToken =
+                    '03AFcWeA5zy7DBK82U_tctVKelJ6L2duTWac5at2zXjHLX8XqUm8tI6NKWMxGd2gjh1vi2hnEyRhVgbMhdb9WjexRsJkxTt-C-_iIIZ5yC3E5I19G5Q0buSTcIQIZS6tskrz-mDn-d37aWxAJtqbg0Yoo1XsdVc5Yf4sB-9iQxQK-W_9YLep_QaAz8uL17gMMlCz5WZM3dbBEEGmk_qPbJu_pZ8kk-lFPDzd6iBobcpyIDRZgTgD4bYUnby5WZc11i00mrRiRS3m-qSY0lprGaBqoyY1BbRkQZ25AGPp5al4kSwBZqpcVgLrs3bjdo8XVWAe73_XLa8HhqLWbz_m5Ebyl5F9awwL7w4qikGj-AK7v2G8pgjT22kDLIeenQ_ss4jYpmSzgnuTItur9pZVzpPkpqs4mzr6y274AmJjzppRTDH4VFtta_E02-R7Hc1rUD2kCYt9BqsD7kDjmetnvLtBm97q5XgBS8rQfeH4P-xqiTAsJwXlcrPybSjnwPEptqYCPX5St_BSj4NQfSuzZowXu_qKsP4hAaE9L2W36MvqePPlEm6LChBT3tnqUwcEYNe5k7lkAAbunxx8q_X5Q3iEdcFqt9_0GWHebRBd5abEbjbmoqqCoQeZt7AUvkXCRfBDne-bf25ypyTtwgyuvYMYXau3zGUjgPUO9WIotZwyKyrYmjsZJ7TiM';
             let res = null;
             try {
                 res = await this.client.get(`${baseUrl}?id=${animeID}&captcha_v3=${captchaToken}`);
@@ -467,7 +468,7 @@ class Gogoanime extends models_1.AnimeParser {
                         image: $(img).find('img').attr('src'),
                         url: `${this.baseUrl}${a.attr('href')}`,
                         genres,
-                        releaseDate
+                        releaseDate,
                     });
                 });
                 const hasNextPage = !$('div.anime_name.anime_list > div > div > ul > li').last().hasClass('selected');
@@ -481,7 +482,11 @@ class Gogoanime extends models_1.AnimeParser {
                 throw new Error('Something went wrong. Please try again later.');
             }
         };
-        this.baseUrl = customBaseURL ? `https://${customBaseURL}` : this.baseUrl;
+        this.baseUrl = customBaseURL
+            ? customBaseURL.startsWith('http://') || customBaseURL.startsWith('https://')
+                ? customBaseURL
+                : `http://${customBaseURL}`
+            : this.baseUrl;
         if (proxy) {
             // Initialize proxyConfig if provided
             this.setProxy(proxy);
@@ -494,7 +499,7 @@ class Gogoanime extends models_1.AnimeParser {
 }
 // (async () => {
 //   const gogo = new Gogoanime();
-//   const search = await gogo.fetchEpisodeSources('jigokuraku-dub-episode-1');
+//   const search = await gogo.fetchEpisodeSources('jigokuraku-dub-episode-1',StreamingServers.StreamWish);
 //   console.log(search);
 // })();
 exports.default = Gogoanime;

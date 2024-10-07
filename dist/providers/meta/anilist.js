@@ -31,9 +31,9 @@ class Anilist extends models_1.AnimeParser {
         this.logo = 'https://upload.wikimedia.org/wikipedia/commons/6/61/AniList_logo.svg';
         this.classPath = 'META.Anilist';
         this.anilistGraphqlUrl = 'https://graphql.anilist.co';
-        this.kitsuGraphqlUrl = 'https://kitsu.io/api/graphql';
+        this.kitsuGraphqlUrl = 'https://kitsu.app/api/graphql';
         this.malSyncUrl = 'https://api.malsync.moe';
-        this.anifyUrl = 'https://api.anify.tv';
+        this.anifyUrl = utils_2.ANIFY_URL;
         /**
          * @param query Search query
          * @param page Page number (optional)
@@ -62,12 +62,14 @@ class Anilist extends models_1.AnimeParser {
                         return ({
                             id: item.id.toString(),
                             malId: item.idMal,
-                            title: {
-                                romaji: item.title.romaji,
-                                english: item.title.english,
-                                native: item.title.native,
-                                userPreferred: item.title.userPreferred,
-                            } || item.title.romaji,
+                            title: item.title
+                                ? {
+                                    romaji: item.title.romaji,
+                                    english: item.title.english,
+                                    native: item.title.native,
+                                    userPreferred: item.title.userPreferred,
+                                }
+                                : item.title.romaji,
                             status: item.status == 'RELEASING'
                                 ? models_1.MediaStatus.ONGOING
                                 : item.status == 'FINISHED'
@@ -195,16 +197,18 @@ class Anilist extends models_1.AnimeParser {
                     results: [],
                 };
                 res.results.push(...((_x = (_w = (_v = (_u = data.data) === null || _u === void 0 ? void 0 : _u.Page) === null || _v === void 0 ? void 0 : _v.media) === null || _w === void 0 ? void 0 : _w.map((item) => {
-                    var _b, _c, _d, _e, _f, _g, _h, _j, _k;
+                    var _b, _c, _d, _e, _f, _g, _h, _j;
                     return ({
                         id: item.id.toString(),
                         malId: item.idMal,
-                        title: {
-                            romaji: item.title.romaji,
-                            english: item.title.english,
-                            native: item.title.native,
-                            userPreferred: item.title.userPreferred,
-                        } || item.title.romaji,
+                        title: item.title
+                            ? {
+                                romaji: item.title.romaji,
+                                english: item.title.english,
+                                native: item.title.native,
+                                userPreferred: item.title.userPreferred,
+                            }
+                            : item.title.romaji,
                         status: item.status == 'RELEASING'
                             ? models_1.MediaStatus.ONGOING
                             : item.status == 'FINISHED'
@@ -222,12 +226,12 @@ class Anilist extends models_1.AnimeParser {
                         coverHash: (0, utils_2.getHashFromImage)(item.bannerImage),
                         popularity: item.popularity,
                         totalEpisodes: (_f = item.episodes) !== null && _f !== void 0 ? _f : ((_g = item.nextAiringEpisode) === null || _g === void 0 ? void 0 : _g.episode) - 1,
-                        currentEpisode: (_j = ((_h = item.nextAiringEpisode) === null || _h === void 0 ? void 0 : _h.episode) - 1) !== null && _j !== void 0 ? _j : item.episodes,
+                        currentEpisode: ((_h = item.nextAiringEpisode) === null || _h === void 0 ? void 0 : _h.episode) - 1 || item.episodes,
                         countryOfOrigin: item.countryOfOrigin,
                         description: item.description,
                         genres: item.genres,
                         rating: item.averageScore,
-                        color: (_k = item.coverImage) === null || _k === void 0 ? void 0 : _k.color,
+                        color: (_j = item.coverImage) === null || _j === void 0 ? void 0 : _j.color,
                         type: item.format,
                         releaseDate: item.seasonYear,
                     });
@@ -813,12 +817,14 @@ class Anilist extends models_1.AnimeParser {
                         return ({
                             id: item.id.toString(),
                             malId: item.idMal,
-                            title: {
-                                romaji: item.title.romaji,
-                                english: item.title.english,
-                                native: item.title.native,
-                                userPreferred: item.title.userPreferred,
-                            } || item.title.romaji,
+                            title: item.title
+                                ? {
+                                    romaji: item.title.romaji,
+                                    english: item.title.english,
+                                    native: item.title.native,
+                                    userPreferred: item.title.userPreferred,
+                                }
+                                : item.title.romaji,
                             image: (_c = (_b = item.coverImage.extraLarge) !== null && _b !== void 0 ? _b : item.coverImage.large) !== null && _c !== void 0 ? _c : item.coverImage.medium,
                             imageHash: (0, utils_2.getHashFromImage)((_e = (_d = item.coverImage.extraLarge) !== null && _d !== void 0 ? _d : item.coverImage.large) !== null && _e !== void 0 ? _e : item.coverImage.medium),
                             trailer: {
@@ -880,12 +886,14 @@ class Anilist extends models_1.AnimeParser {
                         return ({
                             id: item.id.toString(),
                             malId: item.idMal,
-                            title: {
-                                romaji: item.title.romaji,
-                                english: item.title.english,
-                                native: item.title.native,
-                                userPreferred: item.title.userPreferred,
-                            } || item.title.romaji,
+                            title: item.title
+                                ? {
+                                    romaji: item.title.romaji,
+                                    english: item.title.english,
+                                    native: item.title.native,
+                                    userPreferred: item.title.userPreferred,
+                                }
+                                : item.title.romaji,
                             image: (_c = (_b = item.coverImage.extraLarge) !== null && _b !== void 0 ? _b : item.coverImage.large) !== null && _c !== void 0 ? _c : item.coverImage.medium,
                             imageHash: (0, utils_2.getHashFromImage)((_e = (_d = item.coverImage.extraLarge) !== null && _d !== void 0 ? _d : item.coverImage.large) !== null && _e !== void 0 ? _e : item.coverImage.medium),
                             trailer: {
@@ -960,12 +968,14 @@ class Anilist extends models_1.AnimeParser {
                             malId: item.media.idMal,
                             episode: item.episode,
                             airingAt: item.airingAt,
-                            title: {
-                                romaji: item.media.title.romaji,
-                                english: item.media.title.english,
-                                native: item.media.title.native,
-                                userPreferred: item.media.title.userPreferred,
-                            } || item.media.title.romaji,
+                            title: item.media.title
+                                ? {
+                                    romaji: item.media.title.romaji,
+                                    english: item.media.title.english,
+                                    native: item.media.title.native,
+                                    userPreferred: item.media.title.userPreferred,
+                                }
+                                : item.media.title.romaji,
                             country: item.media.countryOfOrigin,
                             image: (_c = (_b = item.media.coverImage.extraLarge) !== null && _b !== void 0 ? _b : item.media.coverImage.large) !== null && _c !== void 0 ? _c : item.media.coverImage.medium,
                             imageHash: (0, utils_2.getHashFromImage)((_e = (_d = item.media.coverImage.extraLarge) !== null && _d !== void 0 ? _d : item.media.coverImage.large) !== null && _e !== void 0 ? _e : item.media.coverImage.medium),
@@ -1015,12 +1025,14 @@ class Anilist extends models_1.AnimeParser {
                         return ({
                             id: item.id.toString(),
                             malId: item.idMal,
-                            title: {
-                                romaji: item.title.romaji,
-                                english: item.title.english,
-                                native: item.title.native,
-                                userPreferred: item.title.userPreferred,
-                            } || item.title.romaji,
+                            title: item.title
+                                ? {
+                                    romaji: item.title.romaji,
+                                    english: item.title.english,
+                                    native: item.title.native,
+                                    userPreferred: item.title.userPreferred,
+                                }
+                                : item.title.romaji,
                             image: (_c = (_b = item.coverImage.extraLarge) !== null && _b !== void 0 ? _b : item.coverImage.large) !== null && _c !== void 0 ? _c : item.coverImage.medium,
                             imageHash: (0, utils_2.getHashFromImage)((_e = (_d = item.coverImage.extraLarge) !== null && _d !== void 0 ? _d : item.coverImage.large) !== null && _e !== void 0 ? _e : item.coverImage.medium),
                             trailer: {
@@ -1461,12 +1473,51 @@ class Anilist extends models_1.AnimeParser {
             }
         };
         /**
-         * TODO: finish this (got lazy)
+         * To get Staff details by anilistId
          * @param id staff id from anilist
          *
          */
         this.fetchStaffById = async (id) => {
-            throw new Error('Not implemented yet');
+            const staffInfo = {
+                id: String(id),
+                name: { first: '', last: '', native: '', full: '' },
+            };
+            const options = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                query: (0, utils_1.anilistStaffInfoQuery)(id),
+            };
+            try {
+                const { data } = await this.client.post(this.anilistGraphqlUrl, options).catch(err => {
+                    throw new Error(err.message);
+                });
+                const staff = data.data.Staff;
+                staffInfo.id = staff === null || staff === void 0 ? void 0 : staff.id;
+                staffInfo.name = staff === null || staff === void 0 ? void 0 : staff.name;
+                staffInfo.image = staff === null || staff === void 0 ? void 0 : staff.image;
+                staffInfo.description = staff === null || staff === void 0 ? void 0 : staff.description;
+                staffInfo.siteUrl = staff === null || staff === void 0 ? void 0 : staff.siteUrl;
+                staffInfo.roles = staff === null || staff === void 0 ? void 0 : staff.staffMedia.edges.map((media) => {
+                    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+                    return ({
+                        id: (_b = media === null || media === void 0 ? void 0 : media.node) === null || _b === void 0 ? void 0 : _b.id,
+                        title: (_c = media === null || media === void 0 ? void 0 : media.node) === null || _c === void 0 ? void 0 : _c.title,
+                        type: (_d = media === null || media === void 0 ? void 0 : media.node) === null || _d === void 0 ? void 0 : _d.type,
+                        image: {
+                            extraLarge: (_f = (_e = media === null || media === void 0 ? void 0 : media.node) === null || _e === void 0 ? void 0 : _e.coverImage) === null || _f === void 0 ? void 0 : _f.extraLarge,
+                            large: (_h = (_g = media === null || media === void 0 ? void 0 : media.node) === null || _g === void 0 ? void 0 : _g.coverImage) === null || _h === void 0 ? void 0 : _h.large,
+                            medium: (_k = (_j = media === null || media === void 0 ? void 0 : media.node) === null || _j === void 0 ? void 0 : _j.coverImage) === null || _k === void 0 ? void 0 : _k.medium,
+                        },
+                        color: (_m = (_l = media === null || media === void 0 ? void 0 : media.node) === null || _l === void 0 ? void 0 : _l.coverImage) === null || _m === void 0 ? void 0 : _m.color,
+                    });
+                });
+                return staffInfo;
+            }
+            catch (err) {
+                throw new Error(err.message);
+            }
         };
         /**
          *
@@ -1693,12 +1744,14 @@ Anilist.Manga = class Manga {
                         return ({
                             id: item.id.toString(),
                             malId: item.idMal,
-                            title: {
-                                romaji: item.title.romaji,
-                                english: item.title.english,
-                                native: item.title.native,
-                                userPreferred: item.title.userPreferred,
-                            } || item.title.romaji,
+                            title: item.title
+                                ? {
+                                    romaji: item.title.romaji,
+                                    english: item.title.english,
+                                    native: item.title.native,
+                                    userPreferred: item.title.userPreferred,
+                                }
+                                : item.title.romaji,
                             status: item.status == 'RELEASING'
                                 ? models_1.MediaStatus.ONGOING
                                 : item.status == 'FINISHED'

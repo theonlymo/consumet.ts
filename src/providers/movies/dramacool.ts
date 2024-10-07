@@ -43,15 +43,11 @@ class DramaCool extends MovieParser {
         $(navSelector).length > 0 ? !$(navSelector).children().last().hasClass('selected') : false;
 
       const lastPage = $(navSelector).children().last().find('a').attr('href');
-      if ( lastPage != undefined && lastPage != "" && lastPage.includes("page=") ) 
-      {
-          const maxPage = new URLSearchParams(lastPage).get("page");
-          if (maxPage != null && !isNaN(parseInt(maxPage)))
-              searchResult.totalPages = parseInt(maxPage);   
-          else if (searchResult.hasNextPage) 
-              searchResult.totalPages = page + 1;                 
-      }else if (searchResult.hasNextPage)                 
-          searchResult.totalPages = page + 1;       
+      if (lastPage != undefined && lastPage != '' && lastPage.includes('page=')) {
+        const maxPage = new URLSearchParams(lastPage).get('page');
+        if (maxPage != null && !isNaN(parseInt(maxPage))) searchResult.totalPages = parseInt(maxPage);
+        else if (searchResult.hasNextPage) searchResult.totalPages = page + 1;
+      } else if (searchResult.hasNextPage) searchResult.totalPages = page + 1;
 
       $('div.block > div.tab-content > ul.list-episode-item > li').each((i, el) => {
         searchResult.results.push({
@@ -80,28 +76,29 @@ class DramaCool extends MovieParser {
       const { data } = await this.client.get(mediaId);
       const $ = load(data);
 
-      mediaInfo.id = realMediaId;     
+      mediaInfo.id = realMediaId;
 
-      const duration = $('div.details div.info p:contains("Duration:")').first().text().trim(); 
-      if ( duration != "" ) 
-        mediaInfo.duration = duration.replace("Duration:", "").trim();   
+      const duration = $('div.details div.info p:contains("Duration:")').first().text().trim();
+      if (duration != '') mediaInfo.duration = duration.replace('Duration:', '').trim();
       const status = $('div.details div.info p:contains("Status:")').find('a').first().text().trim();
       switch (status) {
-          case 'Ongoing':
-              mediaInfo.status = MediaStatus.ONGOING;
-              break;
-          case 'Completed':
-              mediaInfo.status = MediaStatus.COMPLETED;
-              break;
-          default:
-              mediaInfo.status = MediaStatus.UNKNOWN;
-              break;
-      }     
+        case 'Ongoing':
+          mediaInfo.status = MediaStatus.ONGOING;
+          break;
+        case 'Completed':
+          mediaInfo.status = MediaStatus.COMPLETED;
+          break;
+        default:
+          mediaInfo.status = MediaStatus.UNKNOWN;
+          break;
+      }
       mediaInfo.genres = [];
       const genres = $('div.details div.info p:contains("Genre:")');
       genres.each((_index, element) => {
-          $(element).find('a').each((_, anchorElement) => {
-              mediaInfo.genres?.push($(anchorElement).text());
+        $(element)
+          .find('a')
+          .each((_, anchorElement) => {
+            mediaInfo.genres?.push($(anchorElement).text());
           });
       });
 
@@ -115,6 +112,42 @@ class DramaCool extends MovieParser {
         $('div.details div.info p:contains("Released:")').text(),
         'Released'
       );
+      mediaInfo.contentRating = this.removeContainsFromString(
+        $('div.details div.info p:contains("Content Rating:")').text(),
+        'Content Rating'
+      );
+      mediaInfo.airsOn = this.removeContainsFromString(
+        $('div.details div.info p:contains("Airs On:")').text(),
+        'Airs On'
+      );
+      mediaInfo.director = this.removeContainsFromString(
+        $('div.details div.info p:contains("Director:")').text(),
+        'Director'
+      );
+      mediaInfo.originalNetwork = this.cleanUpText(
+        this.removeContainsFromString(
+          $('div.details div.info p:contains("Original Network:")').text().trim(),
+          'Original Network'
+        )
+      );
+
+      const trailerIframe = $('div.trailer').find('iframe').attr('src');
+      mediaInfo.trailer = {
+        id: trailerIframe?.split('embed/')[1]?.split('?')[0]!,
+        url: trailerIframe,
+      };
+      mediaInfo.characters = [];
+      $('div.slider-star > div.item').each((i, el) => {
+        const url = `${this.baseUrl}${$(el).find('a.img').attr('href')}`;
+        const image = $(el).find('img').attr('src');
+        const name = $(el).find('h3.title').text().trim();
+
+        (mediaInfo.characters as any[]).push({
+          url,
+          image,
+          name,
+        });
+      });
 
       mediaInfo.episodes = [];
       $('div.content-left > div.block-tab > div > div > ul > li').each((i, el) => {
@@ -174,6 +207,7 @@ class DramaCool extends MovieParser {
         case StreamingServers.AsianLoad:
           return {
             ...(await new AsianLoad(this.proxyConfig, this.adapter).extract(serverUrl)),
+            download: this.downloadLink(episodeId),
           };
         case StreamingServers.MixDrop:
           return {
@@ -210,10 +244,94 @@ class DramaCool extends MovieParser {
     }
   };
 
+  fetchPopular = async (page: number = 1): Promise<ISearch<IMovieResult>> => {
+    return this.fetchData(`${this.baseUrl}/most-popular-drama?page=${page}`, page);
+  };
+
+  fetchRecentTvShows = async (page: number = 1): Promise<ISearch<IMovieResult>> => {
+    return this.fetchData(`${this.baseUrl}/recently-added?page=${page}`, page, true);
+  };
+
+  fetchRecentMovies = async (page: number = 1): Promise<ISearch<IMovieResult>> => {
+    return this.fetchData(`${this.baseUrl}/recently-added-movie?page=${page}`, page, false, true);
+  };
+
+  private async fetchData(
+    url: string,
+    page: number,
+    isTvShow: boolean = false,
+    isMovies: boolean = false
+  ): Promise<ISearch<IMovieResult>> {
+    try {
+      const { data } = await this.client.get(url);
+      const $ = load(data);
+      const results: ISearch<IMovieResult> = {
+        currentPage: page,
+        totalPages: page,
+        hasNextPage: false,
+        results: [],
+      };
+
+      $('ul.switch-block.list-episode-item')
+        .find('li')
+        .each((i, el) => {
+          const result: IMovieResult = {
+            id: $(el).find('a').attr('href')?.slice(1)!,
+            title: $(el).find('h3.title').text().trim(),
+            url: `${this.baseUrl}${$(el).find('a').attr('href')}`,
+            image: $(el).find('img').attr('data-original'),
+          };
+
+          if (isTvShow || isMovies) {
+            result.id = result.image
+              ? result.image.replace(/^https:\/\/[^\/]+\/[^\/]+\/(.+?)-\d+\.\w+$/, 'drama-detail/$1')!
+              : '';
+          }
+
+          if (isTvShow) {
+            result.episodeNumber = parseFloat($(el).find('span.ep').text().trim().split(' ')[1]);
+          }
+
+          results.results.push(result);
+        });
+
+      const navSelector = 'ul.pagination';
+      results.hasNextPage =
+        $(navSelector).length > 0 ? !$(navSelector).children().last().hasClass('selected') : false;
+
+      const lastPage = $(navSelector).children().last().find('a').attr('href');
+      if (lastPage != undefined && lastPage != '' && lastPage.includes('page=')) {
+        const maxPage = new URLSearchParams(lastPage).get('page');
+        if (maxPage != null && !isNaN(parseInt(maxPage))) results.totalPages = parseInt(maxPage);
+        else if (results.hasNextPage) results.totalPages = page + 1;
+      } else if (results.hasNextPage) results.totalPages = page + 1;
+
+      return results;
+    } catch (err) {
+      throw new Error((err as Error).message);
+    }
+  }
+
+  private downloadLink = (url: string) => {
+    return url.replace(/^(https:\/\/[^\/]+)\/[^?]+(\?.+)$/, '$1/download$2');
+  };
+
   private removeContainsFromString = (str: string, contains: string) => {
     contains = contains.toLowerCase();
     return str.toLowerCase().replace(/\n/g, '').replace(`${contains}:`, '').trim();
   };
+  private cleanUpText = (str: string) => {
+    return str
+      .split(';')
+      .map(part => part.trim())
+      .filter(part => part.length > 0)
+      .join('; ');
+  };
 }
+//testing fetchPopular via iife
+// (async () => {
+//   const dramaCool = new DramaCool();
+//   await dramaCool.fetchRecentTvShows();
+// })();
 
 export default DramaCool;

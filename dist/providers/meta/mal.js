@@ -11,6 +11,7 @@ const zoro_1 = __importDefault(require("../anime/zoro"));
 const crunchyroll_1 = __importDefault(require("../anime/crunchyroll"));
 const anify_1 = __importDefault(require("../anime/anify"));
 const bilibili_1 = __importDefault(require("../anime/bilibili"));
+const utils_2 = require("../../utils/utils");
 class Myanimelist extends models_1.AnimeParser {
     /**
      * This class maps myanimelist to kitsu with any other anime provider.
@@ -24,9 +25,9 @@ class Myanimelist extends models_1.AnimeParser {
         this.logo = 'https://en.wikipedia.org/wiki/MyAnimeList#/media/File:MyAnimeList.png';
         this.classPath = 'META.Myanimelist';
         this.anilistGraphqlUrl = 'https://graphql.anilist.co';
-        this.kitsuGraphqlUrl = 'https://kitsu.io/api/graphql';
+        this.kitsuGraphqlUrl = 'https://kitsu.app/api/graphql';
         this.malSyncUrl = 'https://api.malsync.moe';
-        this.anifyUrl = 'https://api.anify.tv';
+        this.anifyUrl = utils_2.ANIFY_URL;
         this.search = async (query, page = 1) => {
             const searchResults = {
                 currentPage: page,
