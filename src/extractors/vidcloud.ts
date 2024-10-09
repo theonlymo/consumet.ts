@@ -15,7 +15,7 @@ class VidCloud extends VideoExtractor {
     try {
       const rabbit_url = process.env.RABBIT_URL
       let res = await this.client.post(
-        `${rabbit_url}/${isVidcloud ? "vidcloud" : "upcloud"}`, { "url": videoUrl.href }
+        `${rabbit_url}/api/upcloud`, { "url": videoUrl.href }
       )
       const { data } = await this.client.get(res.data.source);
       const urls = data.split('\n').filter((line: string) => line.includes('.m3u8')) as string[];
@@ -42,10 +42,14 @@ class VidCloud extends VideoExtractor {
         quality: 'auto',
       });
 
-      result.subtitles = res.data.subtitle.map((s: any) => ({
-        url: s.file,
-        lang: s.label ? s.label : 'Default (maybe)',
-      }));
+      if (res.data.subtitle) {
+        result.subtitles = res.data.subtitle.map((s: any) => ({
+          url: s.file,
+          lang: s.label ? s.label : 'Default (maybe)',
+        }));
+      } else {
+        result.subtitles = [];
+      }
 
       return result;
     } catch (err) {
