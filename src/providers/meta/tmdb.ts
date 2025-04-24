@@ -233,6 +233,13 @@ class TMDB extends MovieParser {
         .filter((crew: { job: string }) => crew.job === 'Screenplay')
         .map((crew: { name: string }) => crew.name);
       info.actors = data?.credits?.cast.map((cast: { name: string }) => cast.name);
+      info.characters = data?.credits?.cast.map((cast: any) => ({
+        id: cast.id,
+        name: cast.name,
+        url: `https://www.themoviedb.org/person/${cast.id}`,
+        character: cast.character,
+        image: `https://image.tmdb.org/t/p/original${cast.profile_path}`,
+      }));
       info.trailer = {
         id: data?.videos?.results[0]?.key,
         site: data?.videos?.results[0]?.site,
@@ -401,7 +408,7 @@ class TMDB extends MovieParser {
     // if extraData contains a year, filter out the results that don't match the year
     if (extraData && extraData.year && extraData.type === TvType.MOVIE) {
       findMedia.results = findMedia.results.filter(result => {
-        return result.releaseDate?.split('-')[0] === extraData.year;
+        return String(result.releaseDate).split('-')[0].trim() === String(extraData.year).trim();
       });
     }
 
@@ -411,7 +418,7 @@ class TMDB extends MovieParser {
     // Allow for a range of ±2 seasons and ensure that the seasons value is a number.
     if (extraData && extraData.totalSeasons && extraData.type === TvType.TVSERIES) {
       findMedia.results = findMedia.results.filter(result => {
-        const totalSeasons = (result.seasons as number) || 0;
+        const totalSeasons = (result.season as number) || 0;
         const extraDataSeasons = (extraData.totalSeasons as number) || 0;
         return totalSeasons >= extraDataSeasons - 2 && totalSeasons <= extraDataSeasons + 2;
       });

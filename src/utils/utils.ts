@@ -160,7 +160,7 @@ const generateHash = async (url: string) => {
   const arrayBuffer = await response.arrayBuffer();
   returnedBuffer = Buffer.from(arrayBuffer);
 
-  return "fakehash";
+  return 'fakehash';
 };
 
 export const getHashFromImage = (url: string) => {

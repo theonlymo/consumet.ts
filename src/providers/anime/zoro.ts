@@ -12,6 +12,8 @@ import {
   MediaFormat,
   SubOrSub,
   IAnimeEpisode,
+  MediaStatus,
+  WatchListType,
 } from '../../models';
 
 import { StreamSB, RapidCloud, MegaCloud, StreamTape } from '../../utils';
@@ -19,7 +21,7 @@ import { USER_AGENT } from '../../utils';
 
 class Zoro extends AnimeParser {
   override readonly name = 'Zoro';
-  protected override baseUrl = 'https://hianime.to';
+  protected override baseUrl = 'https://hianimez.to';
   protected override logo =
     'https://is3-ssl.mzstatic.com/image/thumb/Purple112/v4/7e/91/00/7e9100ee-2b62-0942-4cdc-e9b93252ce1c/source/512x512bb.jpg';
   protected override classPath = 'ANIME.Zoro';
@@ -46,6 +48,122 @@ class Zoro extends AnimeParser {
       page = 1;
     }
     return this.scrapeCardPage(`${this.baseUrl}/search?keyword=${decodeURIComponent(query)}&page=${page}`);
+  }
+  /**
+   * Fetch advanced anime search results with various filters.
+   *
+   * @param page Page number (default: 1)
+   * @param type One of (Optional): movie, tv, ova, ona, special, music
+   * @param status One of (Optional): finished_airing, currently_airing, not_yet_aired
+   * @param rated One of (Optional): g, pg, pg_13, r, r_plus, rx
+   * @param score Number from 1 to 10 (Optional)
+   * @param season One of (Optional): spring, summer, fall, winter
+   * @param language One of (Optional): sub, dub, sub_dub
+   * @param startDate Start date object { year, month, day } (Optional)
+   * @param endDate End date object { year, month, day } (Optional)
+   * @param sort One of (Optional): recently_added, recently_updated, score, name_az, released_date, most_watched
+   * @param genres Array of genres (Optional): action, adventure, cars, comedy, dementia, demons, mystery, drama, ecchi, fantasy, game, historical, horror, kids, magic, martial_arts, mecha, music, parody, samurai, romance, school, sci_fi, shoujo, shoujo_ai, shounen, shounen_ai, space, sports, super_power, vampire, harem, military, slice_of_life, supernatural, police, psychological, thriller, seinen, isekai, josei
+   * @returns A Promise resolving to the search results.
+   */
+  fetchAdvancedSearch(
+    page: number = 1,
+    type?: string,
+    status?: string,
+    rated?: string,
+    score?: number,
+    season?: string,
+    language?: string,
+    startDate?: { year: number; month: number; day: number },
+    endDate?: { year: number; month: number; day: number },
+    sort?: string,
+    genres?: string[]
+  ): Promise<ISearch<IAnimeResult>> {
+    if (page <= 0) page = 1;
+
+    const mappings: Record<string, Record<string, number>> = {
+      type: { movie: 1, tv: 2, ova: 3, ona: 4, special: 5, music: 6 },
+      status: { finished_airing: 1, currently_airing: 2, not_yet_aired: 3 },
+      rated: { g: 1, pg: 2, pg_13: 3, r: 4, r_plus: 5, rx: 6 },
+      season: { spring: 1, summer: 2, fall: 3, winter: 4 },
+      language: { sub: 1, dub: 2, sub_dub: 3 },
+      genre: {
+        action: 1,
+        adventure: 2,
+        cars: 3,
+        comedy: 4,
+        dementia: 5,
+        demons: 6,
+        mystery: 7,
+        drama: 8,
+        ecchi: 9,
+        fantasy: 10,
+        game: 11,
+        historical: 13,
+        horror: 14,
+        kids: 15,
+        magic: 16,
+        martial_arts: 17,
+        mecha: 18,
+        music: 19,
+        parody: 20,
+        samurai: 21,
+        romance: 22,
+        school: 23,
+        sci_fi: 24,
+        shoujo: 25,
+        shoujo_ai: 26,
+        shounen: 27,
+        shounen_ai: 28,
+        space: 29,
+        sports: 30,
+        super_power: 31,
+        vampire: 32,
+        harem: 35,
+        military: 38,
+        slice_of_life: 36,
+        supernatural: 37,
+        police: 39,
+        psychological: 40,
+        thriller: 41,
+        seinen: 42,
+        isekai: 44,
+        josei: 43,
+      },
+    };
+
+    const params = new URLSearchParams({ page: page.toString() });
+
+    const addParam = (key: string, value?: string) => {
+      if (value) params.append(key, (mappings[key]?.[value] || value).toString());
+    };
+
+    addParam('type', type);
+    addParam('status', status);
+    addParam('rated', rated);
+    if (score) params.append('score', score.toString());
+    addParam('season', season);
+    addParam('language', language);
+
+    if (startDate) {
+      params.append('sy', startDate.year.toString());
+      params.append('sm', startDate.month.toString());
+      params.append('sd', startDate.day.toString());
+    }
+
+    if (endDate) {
+      params.append('ey', endDate.year.toString());
+      params.append('em', endDate.month.toString());
+      params.append('ed', endDate.day.toString());
+    }
+
+    if (sort) params.append('sort', sort);
+
+    if (genres?.length) {
+      const genreIds = genres.map(genre => (mappings.genre[genre] || genre).toString()).join('%2C');
+      params.append('genres', genreIds);
+    }
+
+    return this.scrapeCardPage(`${this.baseUrl}/filter?${params.toString()}`);
   }
 
   /**
@@ -377,6 +495,37 @@ class Zoro extends AnimeParser {
     }
   }
 
+  async fetchWatchList(
+    connectSid: string,
+    page: number = 1,
+    sortListType?: WatchListType
+  ): Promise<ISearch<IAnimeResult>> {
+    if (!(await this.verifyLoginState(connectSid))) {
+      throw new Error('Invalid session ID');
+    }
+    if (0 >= page) {
+      page = 1;
+    }
+    let type: number = 0;
+    switch (sortListType) {
+      case WatchListType.WATCHING:
+        type = 1;
+      case WatchListType.ONHOLD:
+        type = 2;
+      case WatchListType.PLAN_TO_WATCH:
+        type = 3;
+      case WatchListType.DROPPED:
+        type = 4;
+      case WatchListType.COMPLETED:
+        type = 5;
+    }
+    return this.scrapeCardPage(
+      `${this.baseUrl}/user/watch-list?page=${page}${type != 0 ? '&type=' + type : ''}`,
+      {
+        headers: { Cookie: `connect.sid=${connectSid}` },
+      }
+    );
+  }
   /**
    * @param id Anime id
    */
@@ -432,6 +581,49 @@ class Zoro extends AnimeParser {
         info.subOrDub = SubOrSub.BOTH;
       }
 
+      // ZORO - PAGE INFO
+      const zInfo = await this.client.get(info.url);
+      const $$$ = load(zInfo.data);
+
+      info.genres = [];
+      $$$('.item.item-list')
+        .find('a')
+        .each(function () {
+          const genre = $(this).text().trim();
+          if (genre != undefined) info.genres?.push(genre);
+        });
+
+      switch (
+        $$$('.item.item-title').find("span.item-head:contains('Status')").next('span.name').text().trim()
+      ) {
+        case 'Finished Airing':
+          info.status = MediaStatus.COMPLETED;
+          break;
+        case 'Currently Airing':
+          info.status = MediaStatus.ONGOING;
+          break;
+        case 'Not yet aired':
+          info.status = MediaStatus.NOT_YET_AIRED;
+          break;
+        default:
+          info.status = MediaStatus.UNKNOWN;
+          break;
+      }
+
+      info.season = $$$('.item.item-title')
+        .find("span.item-head:contains('Premiered')")
+        .next('span.name')
+        .text()
+        .trim();
+
+      if (info.japaneseTitle == '' || info.japaneseTitle == undefined) {
+        info.japaneseTitle = $$$('.item.item-title')
+          .find("span.item-head:contains('Japanese')")
+          .next('span.name')
+          .text()
+          .trim();
+      }
+
       const episodesAjax = await this.client.get(
         `${this.baseUrl}/ajax/v2/episode/list/${id.split('-').pop()}`,
         {
@@ -447,21 +639,23 @@ class Zoro extends AnimeParser {
       info.totalEpisodes = $$('div.detail-infor-content > div > a').length;
       info.episodes = [];
       $$('div.detail-infor-content > div > a').each((i, el) => {
-        const episodeId = $$(el)
-          .attr('href')
-          ?.split('/')[2]
-          ?.replace('?ep=', '$episode$')
-          ?.concat(`$${info.subOrDub}`)!;
+        const episodeId = $$(el).attr('href')?.split('/')[2]?.replace('?ep=', '$episode$')!;
         const number = parseInt($$(el).attr('data-number')!);
         const title = $$(el).attr('title');
         const url = this.baseUrl + $$(el).attr('href');
         const isFiller = $$(el).hasClass('ssl-item-filler');
+        const isSubbed =
+          number <= (parseInt($('div.film-stats div.tick div.tick-item.tick-sub').text().trim()) || 0);
+        const isDubbed =
+          number <= (parseInt($('div.film-stats div.tick div.tick-item.tick-dub').text().trim()) || 0);
 
         info.episodes?.push({
           id: episodeId,
           number: number,
           title: title,
           isFiller: isFiller,
+          isSubbed: isSubbed,
+          isDubbed: isDubbed,
           url: url,
         });
       });
@@ -475,10 +669,13 @@ class Zoro extends AnimeParser {
   /**
    *
    * @param episodeId Episode id
+   * @param server server type (default `VidCloud`) (optional)
+   * @param subOrDub sub or dub (default `SubOrSub.SUB`) (optional)
    */
   override fetchEpisodeSources = async (
     episodeId: string,
-    server: StreamingServers = StreamingServers.VidCloud
+    server: StreamingServers = StreamingServers.VidCloud,
+    subOrDub: SubOrSub = SubOrSub.SUB
   ): Promise<ISource> => {
     if (episodeId.startsWith('http')) {
       const serverUrl = new URL(episodeId);
@@ -486,7 +683,8 @@ class Zoro extends AnimeParser {
         case StreamingServers.VidStreaming:
         case StreamingServers.VidCloud:
           return {
-            ...(await new MegaCloud().extract(serverUrl)),
+            headers: { Referer: serverUrl.href },
+            ...(await new MegaCloud().extract(serverUrl, this.baseUrl)),
           };
         case StreamingServers.StreamSB:
           return {
@@ -506,16 +704,17 @@ class Zoro extends AnimeParser {
         case StreamingServers.VidCloud:
           return {
             headers: { Referer: serverUrl.href },
-            ...(await new MegaCloud().extract(serverUrl)),
+            ...(await new MegaCloud().extract(serverUrl, this.baseUrl)),
           };
       }
     }
     if (!episodeId.includes('$episode$')) throw new Error('Invalid episode id');
 
+    // keeping this for future use
     // Fallback to using sub if no info found in case of compatibility
 
     // TODO: add both options later
-    const subOrDub: 'sub' | 'dub' = episodeId.split('$')?.pop() === 'dub' ? 'dub' : 'sub';
+    // subOrDub = episodeId.split('$')?.pop() === 'dub' ? 'dub' : 'sub';
 
     episodeId = `${this.baseUrl}/watch/${episodeId
       .replace('$episode$', '?ep=')
@@ -568,7 +767,7 @@ class Zoro extends AnimeParser {
         data: { link },
       } = await this.client.get(`${this.baseUrl}/ajax/v2/episode/sources?id=${serverId}`);
 
-      return await this.fetchEpisodeSources(link, server);
+      return await this.fetchEpisodeSources(link, server, SubOrSub.SUB);
     } catch (err) {
       throw err;
     }
@@ -587,17 +786,25 @@ class Zoro extends AnimeParser {
     }
   };
 
-  private retrieveServerId = ($: any, index: number, subOrDub: 'sub' | 'dub') => {
-    return $(`.ps_-block.ps_-block-sub.servers-${subOrDub} > .ps__-list .server-item`)
-      .map((i: any, el: any) => ($(el).attr('data-server-id') == `${index}` ? $(el) : null))
-      .get()[0]
-      .attr('data-id')!;
+  private retrieveServerId = ($: any, index: number, subOrDub: SubOrSub) => {
+    const rawOrSubOrDub = (raw: boolean) =>
+      $(`.ps_-block.ps_-block-sub.servers-${raw ? 'raw' : subOrDub} > .ps__-list .server-item`)
+        .map((i: any, el: any) => ($(el).attr('data-server-id') == `${index}` ? $(el) : null))
+        .get()[0]
+        .attr('data-id');
+    try {
+      // Attempt to get the subOrDub ID
+      return rawOrSubOrDub(false);
+    } catch (error) {
+      // If an error is thrown, attempt to get the raw ID (The raw is the newest episode uploaded to zoro)
+      return rawOrSubOrDub(true);
+    }
   };
 
   /**
    * @param url string
    */
-  private scrapeCardPage = async (url: string): Promise<ISearch<IAnimeResult>> => {
+  private scrapeCardPage = async (url: string, headers?: object): Promise<ISearch<IAnimeResult>> => {
     try {
       const res: ISearch<IAnimeResult> = {
         currentPage: 0,
@@ -605,7 +812,7 @@ class Zoro extends AnimeParser {
         totalPages: 0,
         results: [],
       };
-      const { data } = await this.client.get(url);
+      const { data } = await this.client.get(url, headers);
       const $ = load(data);
 
       const pagination = $('ul.pagination');
@@ -644,6 +851,7 @@ class Zoro extends AnimeParser {
         const card = $(ele);
         const atag = card.find('.film-name a');
         const id = atag.attr('href')?.split('/')[1].split('?')[0];
+        const watchList = card.find('.dropdown-menu .added').text().trim() as WatchListType;
         const type = card
           .find('.fdi-item')
           ?.first()
@@ -656,6 +864,7 @@ class Zoro extends AnimeParser {
           url: `${this.baseUrl}${atag.attr('href')}`,
           image: card.find('img')?.attr('data-src'),
           duration: card.find('.fdi-duration')?.text(),
+          watchList: watchList || WatchListType.NONE,
           japaneseTitle: atag.attr('data-jname'),
           type: type as MediaFormat,
           nsfw: card.find('.tick-rate')?.text() === '18+' ? true : false,
@@ -680,9 +889,13 @@ class Zoro extends AnimeParser {
 
 // (async () => {
 //   const zoro = new Zoro();
-//   const anime = await zoro.search('classroom of the elite');
-//   const info = await zoro.fetchAnimeInfo(anime.results[0].id);
-//   const sources = await zoro.fetchEpisodeSources(info.episodes![0].id);
+//   const anime = await zoro.search('Dandadan');
+//   const info = await zoro.fetchAnimeInfo('solo-leveling-season-2-arise-from-the-shadow-19413');
+//   const sources = await zoro.fetchEpisodeSources(
+//     'solo-leveling-season-2-arise-from-the-shadow-19413$episode$131394$dub',
+//     StreamingServers.VidCloud,
+//     SubOrSub.DUB
+//   );
 //   console.log(sources);
 // })();
 

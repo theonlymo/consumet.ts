@@ -16,11 +16,11 @@ import {
   ProxyConfig,
 } from '../../models';
 import { USER_AGENT } from '../../utils';
-import { GogoCDN, StreamSB, StreamWish } from '../../extractors';
+import { GogoCDN, Mp4Upload, StreamSB, StreamWish } from '../../extractors';
 
 class Gogoanime extends AnimeParser {
   override readonly name = 'Gogoanime';
-  protected override baseUrl = 'https://anitaku.pe';
+  protected override baseUrl = 'https://anitaku.bz'; // Do not include a trailing forward slash.
   protected override logo =
     'https://play-lh.googleusercontent.com/MaGEiAEhNHAJXcXKzqTNgxqRmhuKB1rCUgb15UrN_mWUNRnLpO5T1qja64oRasO7mn0';
   protected override classPath = 'ANIME.Gogoanime';
@@ -194,7 +194,7 @@ class Gogoanime extends AnimeParser {
         case StreamingServers.GogoCDN:
           return {
             headers: { Referer: serverUrl.origin },
-            sources: await new GogoCDN(this.proxyConfig, this.adapter).extract(serverUrl),
+            ...(await new GogoCDN(this.proxyConfig, this.adapter).extract(serverUrl)),
             download: downloadUrl ? downloadUrl : `https://${serverUrl.host}/download${serverUrl.search}`,
           };
         case StreamingServers.StreamSB:
@@ -207,18 +207,26 @@ class Gogoanime extends AnimeParser {
             sources: await new StreamSB(this.proxyConfig, this.adapter).extract(serverUrl),
             download: downloadUrl ? downloadUrl : `https://${serverUrl.host}/download${serverUrl.search}`,
           };
+        case StreamingServers.Mp4Upload:
+          return {
+            headers: {
+              Referer: serverUrl.origin,
+            },
+            sources: await new Mp4Upload(this.proxyConfig, this.adapter).extract(serverUrl),
+            download: downloadUrl ? downloadUrl : `https://${serverUrl.host}/download${serverUrl.search}`,
+          };
         case StreamingServers.StreamWish:
           return {
             headers: {
-              Referer: serverUrl.origin
+              Referer: serverUrl.origin,
             },
-            sources: await new StreamWish(this.proxyConfig, this.adapter).extract(serverUrl),
+            ...(await new StreamWish(this.proxyConfig, this.adapter).extract(serverUrl)),
             download: downloadUrl ? downloadUrl : `https://${serverUrl.host}/download${serverUrl.search}`,
           };
         default:
           return {
             headers: { Referer: serverUrl.origin },
-            sources: await new GogoCDN(this.proxyConfig, this.adapter).extract(serverUrl),
+            ...(await new GogoCDN(this.proxyConfig, this.adapter).extract(serverUrl)),
             download: downloadUrl ? downloadUrl : `https://${serverUrl.host}/download${serverUrl.search}`,
           };
       }
@@ -248,6 +256,11 @@ class Gogoanime extends AnimeParser {
         case StreamingServers.StreamWish:
           serverUrl = new URL(
             $('div.anime_video_body > div.anime_muti_link > ul > li.streamwish > a').attr('data-video')!
+          );
+          break;
+        case StreamingServers.Mp4Upload:
+          serverUrl = new URL(
+            $('div.anime_video_body > div.anime_muti_link > ul > li.mp4upload > a').attr('data-video')!
           );
           break;
         default:

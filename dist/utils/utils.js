@@ -151,7 +151,7 @@ const generateHash = async (url) => {
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     returnedBuffer = Buffer.from(arrayBuffer);
-    return "fakehash";
+    return 'fakehash';
 };
 const getHashFromImage = (url) => {
     if (url.length === 0 || url === null) {

@@ -14,6 +14,7 @@ import {
   SmashyStream,
   StreamHub,
   VidMoly,
+  MegaUp,
 } from '../extractors';
 import {
   USER_AGENT,
@@ -45,6 +46,7 @@ import {
   anilistStaffInfoQuery,
 } from './queries';
 import { parsePostInfo } from './getComics';
+import getKKey from '../extractors/kisskh/kkey';
 
 export {
   USER_AGENT,
@@ -88,4 +90,6 @@ export {
   substringBefore,
   compareTwoStrings,
   VidMoly,
+  getKKey,
+  MegaUp,
 };

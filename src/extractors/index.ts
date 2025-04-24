@@ -17,7 +17,9 @@ import StreamWish from './streamwish';
 import VidCloud from './vidcloud';
 import VidMoly from './vidmoly';
 import VizCloud from './vizcloud';
+import VidHide from './vidhide';
 import Voe from './voe';
+import { MegaUp } from './megaup';
 
 export {
   AsianLoad,
@@ -39,5 +41,7 @@ export {
   VidCloud,
   VidMoly,
   VizCloud,
+  VidHide,
   Voe,
+  MegaUp,
 };

@@ -7,8 +7,8 @@ class AnimeFox extends models_1.AnimeParser {
     constructor() {
         super(...arguments);
         this.name = 'AnimeFox';
-        this.baseUrl = 'https://animefox.tv';
-        this.logo = 'https://animefox.tv/assets/images/logo.png';
+        this.baseUrl = 'https://animefox.fun';
+        this.logo = 'https://animefox.fun/assets/images/logo.png';
         this.classPath = 'ANIME.AnimeFox';
         /**
          * @param query Search query
@@ -166,7 +166,7 @@ class AnimeFox extends models_1.AnimeParser {
                 const iframe = $('#iframe-to-load').attr('src') || '';
                 const streamUrl = `https://goload.io/streaming.php?id=${iframe.split('=')[1]}`;
                 return {
-                    sources: await new extractors_1.GogoCDN(this.proxyConfig).extract(new URL(streamUrl)),
+                    ...(await new extractors_1.GogoCDN(this.proxyConfig).extract(new URL(streamUrl))),
                 };
             }
             catch (err) {

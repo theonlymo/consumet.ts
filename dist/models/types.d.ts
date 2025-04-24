@@ -26,6 +26,7 @@ export interface IAnimeResult {
     rating?: number;
     type?: MediaFormat;
     releaseDate?: string;
+    relationType?: string;
     [x: string]: any;
 }
 export interface ISearch<T> {
@@ -50,9 +51,15 @@ export interface FuzzyDate {
     month?: number;
     day?: number;
 }
+export interface ExternalLink {
+    id?: string;
+    url?: string;
+    sourceName?: string;
+}
 export declare enum MediaFormat {
     TV = "TV",
     TV_SHORT = "TV_SHORT",
+    TV_SPECIAL = "TV_SPECIAL",
     MOVIE = "MOVIE",
     SPECIAL = "SPECIAL",
     OVA = "OVA",
@@ -60,7 +67,9 @@ export declare enum MediaFormat {
     MUSIC = "MUSIC",
     MANGA = "MANGA",
     NOVEL = "NOVEL",
-    ONE_SHOT = "ONE_SHOT"
+    ONE_SHOT = "ONE_SHOT",
+    PV = "PV",
+    COMIC = "COMIC"
 }
 export interface IAnimeInfo extends IAnimeResult {
     malId?: number | string;
@@ -88,6 +97,7 @@ export interface IAnimeInfo extends IAnimeResult {
     studios?: string[];
     color?: string;
     cover?: string;
+    externalLinks?: ExternalLink[];
     trailer?: Trailer;
     episodes?: IAnimeEpisode[];
     startDate?: FuzzyDate;
@@ -117,6 +127,8 @@ export interface IAnimeEpisode {
     title?: string;
     description?: string;
     isFiller?: boolean;
+    isSubbed?: boolean;
+    isDubbed?: boolean;
     url?: string;
     image?: string;
     imageHash?: string;
@@ -126,6 +138,7 @@ export interface IAnimeEpisode {
 export interface IEpisodeServer {
     name: string;
     url: string;
+    [x: string]: unknown;
 }
 export interface IVideo {
     /**
@@ -163,10 +176,14 @@ export declare enum StreamingServers {
     MyCloud = "mycloud",
     Filemoon = "filemoon",
     VidStreaming = "vidstreaming",
+    BuiltIn = "builtin",
     SmashyStream = "smashystream",
     StreamHub = "streamhub",
     StreamWish = "streamwish",
-    VidMoly = "vidmoly"
+    VidHide = "vidhide",
+    VidMoly = "vidmoly",
+    Voe = "voe",
+    MegaUp = "megaup"
 }
 export declare enum MediaStatus {
     ONGOING = "Ongoing",
@@ -175,6 +192,14 @@ export declare enum MediaStatus {
     CANCELLED = "Cancelled",
     NOT_YET_AIRED = "Not yet aired",
     UNKNOWN = "Unknown"
+}
+export declare enum WatchListType {
+    WATCHING = "watching",
+    ONHOLD = "on-hold",
+    PLAN_TO_WATCH = "plan to watch",
+    DROPPED = "dropped",
+    COMPLETED = "completed",
+    NONE = "none"
 }
 export declare enum SubOrSub {
     SUB = "sub",
@@ -304,7 +329,10 @@ export interface ISource {
     outro?: Intro;
     subtitles?: ISubtitle[];
     sources: IVideo[];
-    download?: string;
+    download?: string | {
+        url?: string;
+        quality?: string;
+    }[];
     embedURL?: string;
 }
 /**

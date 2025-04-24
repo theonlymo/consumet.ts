@@ -19,7 +19,7 @@ class GogoCDN extends models_1.VideoExtractor {
         };
         this.referer = '';
         this.extract = async (videoUrl) => {
-            var _a;
+            var _a, _b;
             this.referer = videoUrl.href;
             const res = await this.client.get(videoUrl.href);
             const $ = (0, cheerio_1.load)(res.data);
@@ -30,8 +30,13 @@ class GogoCDN extends models_1.VideoExtractor {
                 },
             });
             const decryptedData = await this.decryptAjaxData(encryptedData.data.data);
+            // console.log(decryptedData.track.tracks);
             if (!decryptedData.source)
                 throw new Error('No source found. Try a different server.');
+            const subtitles = (_b = decryptedData.track.tracks) === null || _b === void 0 ? void 0 : _b.map((track) => ({
+                url: track.file,
+                lang: track.kind,
+            }));
             if (decryptedData.source[0].file.includes('.m3u8')) {
                 const resResult = await this.client.get(decryptedData.source[0].file.toString());
                 const resolutions = resResult.data.match(/(RESOLUTION=)(.*)(\s*?)(\s*.*)/g);
@@ -68,7 +73,10 @@ class GogoCDN extends models_1.VideoExtractor {
                     quality: 'backup',
                 });
             });
-            return this.sources;
+            return {
+                sources: this.sources,
+                subtitles: subtitles,
+            };
         };
         this.addSources = async (source) => {
             if (source.file.includes('m3u8')) {

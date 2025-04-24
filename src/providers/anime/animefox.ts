@@ -15,8 +15,8 @@ import { GogoCDN } from '../../extractors';
 
 class AnimeFox extends AnimeParser {
   override readonly name = 'AnimeFox';
-  protected override baseUrl = 'https://animefox.tv';
-  protected override logo = 'https://animefox.tv/assets/images/logo.png';
+  protected override baseUrl = 'https://animefox.fun';
+  protected override logo = 'https://animefox.fun/assets/images/logo.png';
   protected override classPath = 'ANIME.AnimeFox';
 
   /**
@@ -186,7 +186,7 @@ class AnimeFox extends AnimeParser {
       const iframe = $('#iframe-to-load').attr('src') || '';
       const streamUrl = `https://goload.io/streaming.php?id=${iframe.split('=')[1]}`;
       return {
-        sources: await new GogoCDN(this.proxyConfig).extract(new URL(streamUrl)),
+        ...(await new GogoCDN(this.proxyConfig).extract(new URL(streamUrl))),
       };
     } catch (err) {
       console.log(err);
