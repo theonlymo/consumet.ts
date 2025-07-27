@@ -650,7 +650,7 @@ let wasmLoader = Object.assign(loadWasm, { initSync: QZ }, grootLoader);
 
 const V = async () => {
   try {
-    let Q0 = await wasmLoader('https://megacloud.tv/images/loading.png?v=0.0.9');
+    let Q0 = await wasmLoader('https://streameeeeee.site/images/loading.png?v=0.0.9');
 
     fake_window.bytes = Q0;
     wasmLoader.groot();
@@ -715,6 +715,10 @@ export async function getSources(embed_url: string, site: string) {
   let regx = /https:\/\/[a-zA-Z0-9.]*/;
   let base_url = embed_url.match(regx)?.[0];
   let test = embed_url.split('/');
+  console.log('base_url: ', base_url);
+  console.log('embed_url: ', embed_url);
+  console.log('xrax: ', xrax);
+  console.log('test: ', test);
   fake_window.xrax = xrax;
   fake_window.G = xrax;
   canvas.baseUrl = embed_url;
@@ -743,11 +747,10 @@ export async function getSources(embed_url: string, site: string) {
     } else {
       getSourcesUrl =
         base_url +
-        '/ajax/' +
         test[3] +
         '/' +
         test[4] +
-        '/getSources?id=' +
+        '/e-1/getSources?id=' +
         fake_window.pid +
         '&v=' +
         fake_window.localStorage.kversion +

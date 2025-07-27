@@ -191,12 +191,16 @@ class FlixHQ extends MovieParser {
         case StreamingServers.VidCloud:
           return {
             headers: { Referer: serverUrl.href },
-            ...(await new VidCloud(this.proxyConfig, this.adapter).extract(serverUrl, true)),
+            ...(await new VidCloud(this.proxyConfig, this.adapter).extract(serverUrl, true, this.baseUrl)),
           };
         case StreamingServers.UpCloud:
           return {
             headers: { Referer: serverUrl.href },
-            ...(await new VidCloud(this.proxyConfig, this.adapter).extract(serverUrl, false)),
+            ...(await new VidCloud(this.proxyConfig, this.adapter).extract(
+              serverUrl,
+              undefined,
+              this.baseUrl
+            )),
           };
         default:
           return {
