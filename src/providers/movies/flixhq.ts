@@ -185,17 +185,17 @@ class FlixHQ extends MovieParser {
       switch (server) {
         case StreamingServers.MixDrop:
           return {
-            headers: { Referer: serverUrl.href },
+            headers: { Referer: 'https://streameeeeee.site', Origin: 'https://streameeeeee.site' },
             sources: await new MixDrop(this.proxyConfig, this.adapter).extract(serverUrl),
           };
         case StreamingServers.VidCloud:
           return {
-            headers: { Referer: serverUrl.href },
+            headers: { Referer: 'https://streameeeeee.site', Origin: 'https://streameeeeee.site' },
             ...(await new VidCloud(this.proxyConfig, this.adapter).extract(serverUrl, true, this.baseUrl)),
           };
         case StreamingServers.UpCloud:
           return {
-            headers: { Referer: serverUrl.href },
+            headers: { Referer: 'https://streameeeeee.site', Origin: 'https://streameeeeee.site' },
             ...(await new VidCloud(this.proxyConfig, this.adapter).extract(
               serverUrl,
               undefined,

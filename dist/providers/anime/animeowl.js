@@ -492,12 +492,12 @@ class AnimeOwl extends models_1.AnimeParser {
         }
     }
 }
-(async () => {
-    const animeowl = new AnimeOwl();
-    const search = await animeowl.fetchSpotlight();
-    const info = await animeowl.fetchAnimeInfo(search.results[0].id);
-    // const sources = await animeowl.fetchEpisodeSources(info.episodes![0].id,StreamingServers.Luffy, SubOrSub.DUB);
-    // console.log(info);
-})();
+// (async () => {
+//   const animeowl = new AnimeOwl();
+//   const search = await animeowl.fetchSpotlight();
+//   const info = await animeowl.fetchAnimeInfo(search.results[0].id);
+//   // const sources = await animeowl.fetchEpisodeSources(info.episodes![0].id,StreamingServers.Luffy, SubOrSub.DUB);
+//   // console.log(info);
+// })();
 exports.default = AnimeOwl;
 //# sourceMappingURL=animeowl.js.map
