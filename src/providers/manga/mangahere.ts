@@ -71,16 +71,10 @@ class MangaHere extends MangaParser {
 
       const $ = load(data);
 
-      const copyrightHandle =
-        $('p.detail-block-content').text().match('Dear user') ||
-        $('p.detail-block-content').text().match('blocked');
-      if (copyrightHandle) {
-        throw Error(copyrightHandle.input?.trim());
-      }
-
-      const copyrightHandle = $('p.detail-block-content').text().match('Dear user');
-      if (copyrightHandle) {
-        throw Error(copyrightHandle.input);
+      const copyrightText = $('p.detail-block-content').text();
+      const copyrightMatch = copyrightText.match('Dear user') || copyrightText.match('blocked');
+      if (copyrightMatch) {
+        throw Error(copyrightMatch.input?.trim());
       }
 
       const bar = $('script[src*=chapter_bar]').data();

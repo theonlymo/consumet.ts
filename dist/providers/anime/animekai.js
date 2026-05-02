@@ -274,7 +274,7 @@ class AnimeKai extends models_1.AnimeParser {
                     const { data } = await this.client.get(`${this.baseUrl}/ajax/links/view?id=${id}&_=${GenerateToken(id)}`, { headers: this.Headers() });
                     const decodedData = JSON.parse(DecodeIframeData(data.result));
                     servers.push({
-                        name: `MegaUp ${$(server).text().trim()}`.toLowerCase(),
+                        name: `MegaUp ${$(server).text().trim()}`.toLowerCase(), //megaup is the only server for now
                         url: decodedData.url,
                         intro: {
                             start: decodedData === null || decodedData === void 0 ? void 0 : decodedData.skip.intro[0],
@@ -441,7 +441,7 @@ class AnimeKai extends models_1.AnimeParser {
                 const titleElement = card.find('span.title');
                 const episodeText = card.find('span').last().text().trim();
                 res.results.push({
-                    id: (_a = card.find('a').attr('href')) === null || _a === void 0 ? void 0 : _a.split('/')[2],
+                    id: (_a = card.find('a').attr('href')) === null || _a === void 0 ? void 0 : _a.split('/')[2], // Extract anime ID
                     title: titleElement.text().trim(),
                     japaneseTitle: titleElement.attr('data-jp'),
                     airingTime: card.find('span.time').text().trim(),

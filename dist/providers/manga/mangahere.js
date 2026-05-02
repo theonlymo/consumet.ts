@@ -70,10 +70,10 @@ class MangaHere extends models_1.MangaParser {
                     },
                 });
                 const $ = (0, cheerio_1.load)(data);
-                const copyrightHandle = $('p.detail-block-content').text().match('Dear user') ||
-                    $('p.detail-block-content').text().match('blocked');
-                if (copyrightHandle) {
-                    throw Error((_a = copyrightHandle.input) === null || _a === void 0 ? void 0 : _a.trim());
+                const copyrightText = $('p.detail-block-content').text();
+                const copyrightMatch = copyrightText.match('Dear user') || copyrightText.match('blocked');
+                if (copyrightMatch) {
+                    throw Error((_a = copyrightMatch.input) === null || _a === void 0 ? void 0 : _a.trim());
                 }
                 const bar = $('script[src*=chapter_bar]').data();
                 const html = $.html();

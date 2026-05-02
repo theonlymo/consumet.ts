@@ -201,7 +201,7 @@ output:
           "season": 1,
           "releaseDate": "2014-10-07",
           "overview": "Barry discovers his powers and puts them to the test, only when he finds its no longer a test but the real thing when he encounters a certain someone.",
-          "url": "https://flixhq.to/ajax/v2/episode/servers/2899",
+          "url": "https://flixhqz.com/ajax/v2/episode/servers/2899",
           "img": "https://image.tmdb.org/t/p/original/piyGyhwbqqyIxcyuZXYmDUWSylb.jpg"
         },
         {
@@ -211,7 +211,7 @@ output:
           "season": 1,
           "releaseDate": "2014-10-14",
           "overview": "Barry changes into the Flash when six gunmen storm a university event honoring a scientist, but his heroics don't match up to his expectations. Meanwhile, Iris becomes even more intrigued by the \"red streak.\"",
-          "url": "https://flixhq.to/ajax/v2/episode/servers/2900",
+          "url": "https://flixhqz.com/ajax/v2/episode/servers/2900",
           "img": "https://image.tmdb.org/t/p/original/mUgakZLNaMIjG63pz7VeJXJPMu4.jpg"
         },
         {...}

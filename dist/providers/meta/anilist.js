@@ -856,7 +856,9 @@ class Anilist extends models_1.AnimeParser {
                             releaseDate: item.seasonYear,
                             color: (_r = item.coverImage) === null || _r === void 0 ? void 0 : _r.color,
                             genres: item.genres,
-                            totalEpisodes: isNaN(item.episodes) ? 0 : (_u = (_s = item.episodes) !== null && _s !== void 0 ? _s : ((_t = item.nextAiringEpisode) === null || _t === void 0 ? void 0 : _t.episode) - 1) !== null && _u !== void 0 ? _u : 0,
+                            totalEpisodes: isNaN(item.episodes)
+                                ? 0
+                                : (_s = item.episodes) !== null && _s !== void 0 ? _s : ((_u = (_t = item.nextAiringEpisode) === null || _t === void 0 ? void 0 : _t.episode) !== null && _u !== void 0 ? _u : 1) - 1,
                             duration: item.duration,
                             type: item.format,
                         });
@@ -925,7 +927,9 @@ class Anilist extends models_1.AnimeParser {
                             releaseDate: item.seasonYear,
                             color: (_r = item.coverImage) === null || _r === void 0 ? void 0 : _r.color,
                             genres: item.genres,
-                            totalEpisodes: isNaN(item.episodes) ? 0 : (_u = (_s = item.episodes) !== null && _s !== void 0 ? _s : ((_t = item.nextAiringEpisode) === null || _t === void 0 ? void 0 : _t.episode) - 1) !== null && _u !== void 0 ? _u : 0,
+                            totalEpisodes: isNaN(item.episodes)
+                                ? 0
+                                : (_s = item.episodes) !== null && _s !== void 0 ? _s : ((_u = (_t = item.nextAiringEpisode) === null || _t === void 0 ? void 0 : _t.episode) !== null && _u !== void 0 ? _u : 1) - 1,
                             duration: item.duration,
                             type: item.format,
                         });
@@ -1053,7 +1057,9 @@ class Anilist extends models_1.AnimeParser {
                             releaseDate: item.seasonYear,
                             color: (_r = item.coverImage) === null || _r === void 0 ? void 0 : _r.color,
                             genres: item.genres,
-                            totalEpisodes: isNaN(item.episodes) ? 0 : (_u = (_s = item.episodes) !== null && _s !== void 0 ? _s : ((_t = item.nextAiringEpisode) === null || _t === void 0 ? void 0 : _t.episode) - 1) !== null && _u !== void 0 ? _u : 0,
+                            totalEpisodes: isNaN(item.episodes)
+                                ? 0
+                                : (_s = item.episodes) !== null && _s !== void 0 ? _s : ((_u = (_t = item.nextAiringEpisode) === null || _t === void 0 ? void 0 : _t.episode) !== null && _u !== void 0 ? _u : 1) - 1,
                             duration: item.duration,
                             type: item.format,
                         });

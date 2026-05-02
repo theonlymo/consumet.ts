@@ -151,7 +151,7 @@ function parse(text: string, func: Function, func2: Function) {
     i !== len &&
       (0 !== i && (text = text.slice(i)),
       (parsedLen = func2(parsedLen, len, (len = i + 3 * text.length), 1) >>> 0),
-      (encoded = getMemBuff().subarray(parsedLen + i, parsedLen + len)),
+      (encoded = getMemBuff().subarray(parsedLen + i, parsedLen + len) as Uint8Array<ArrayBuffer>),
       (i += encode(text, encoded).written),
       (parsedLen = func2(parsedLen, len, i, 1) >>> 0)),
     (size = i),
@@ -167,7 +167,7 @@ function isNull(test: any) {
 
 function getDataView() {
   return (dataView =
-    dataView === null || isDetached(dataView.buffer) || dataView.buffer !== wasm.memory.buffer
+    dataView === null || isDetached(dataView.buffer as ArrayBuffer) || dataView.buffer !== wasm.memory.buffer
       ? new DataView(wasm.memory.buffer)
       : dataView);
 }

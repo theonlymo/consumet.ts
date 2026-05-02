@@ -44,10 +44,10 @@ declare class Anix extends AnimeParser {
      * @param episodeId Episode id
      * @param type Type (optional) (options: `sub`, `dub`, `raw`)
      */
-    fetchEpisodeServerType: (id: string, episodeId: string, type?: string) => Promise<IEpisodeServer[] | {
+    fetchEpisodeServerType: (id: string, episodeId: string, type?: string) => Promise<{
         sub: IEpisodeServer[];
         dub: IEpisodeServer[];
         raw: IEpisodeServer[];
-    }>;
+    } | IEpisodeServer[]>;
 }
 export default Anix;

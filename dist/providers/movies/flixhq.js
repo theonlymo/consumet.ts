@@ -7,7 +7,7 @@ class FlixHQ extends models_1.MovieParser {
     constructor() {
         super(...arguments);
         this.name = 'FlixHQ';
-        this.baseUrl = 'https://flixhq.to';
+        this.baseUrl = 'https://flixhqz.com';
         this.logo = 'https://upload.wikimedia.org/wikipedia/commons/7/7a/MyAnimeList_Logo.png';
         this.classPath = 'MOVIES.FlixHQ';
         this.supportedTypes = new Set([models_1.TvType.MOVIE, models_1.TvType.TVSERIES]);
